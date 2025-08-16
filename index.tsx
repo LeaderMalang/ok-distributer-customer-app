@@ -2,7 +2,7 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
  */
-import { useState, useEffect, FormEvent, useRef, FC } from "react";
+import { useState, useEffect, FormEvent, useRef, FC,useCallback } from "react";
 import ReactDOM from "react-dom/client";
 const API_BASE_URL = "http://127.0.0.1:8000";
 
@@ -197,33 +197,35 @@ const LoginPage = ({
   onLogin,
   onSwitchToRegister,
   onSwitchToResetPassword,
-  onApiError
+  onApiError,
 }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit =async (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
       const response = await fetch(`${API_BASE_URL}/user/auth/login/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username: email, password }),
       });
       const data = await response.json();
       console.log(data);
       if (response.ok) {
-        localStorage.setItem('token', data.token);
+        localStorage.setItem("token", data.token);
         onLogin({ name: data.party.name, email });
       } else {
-        const errorMessage = data.non_field_errors[0] || 'Login failed. Please check your credentials.';
+        const errorMessage =
+          data.non_field_errors[0] ||
+          "Login failed. Please check your credentials.";
         onApiError(errorMessage);
       }
     } catch (error) {
-        //console.error('Login error:', error.non_field_errors[0]);
-      onApiError('An unexpected error occurred. Please try again.');
+      //console.error('Login error:', error.non_field_errors[0]);
+      onApiError("An unexpected error occurred. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -286,72 +288,183 @@ const LoginPage = ({
   );
 };
 
-const ResetPasswordPage = ({ onSwitchToLogin }) => {
+const ResetPasswordPage = ({ onSwitchToLogin, onApiSuccess, onApiError }) => {
+  const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
+  const [code, setCode] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleResetPassword = (e: FormEvent) => {
+  const handleSendCode = async (e: FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      // NOTE: This is a placeholder for your actual API endpoint.
+      const response = await fetch(
+        `${API_BASE_URL}/user/auth/reset-password/request/`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        }
+      );
+      const data = await response.json();
+      if (response.ok) {
+        onApiSuccess(
+          data.message || "A password reset code has been sent to your email."
+        );
+        setStep(2);
+      } else {
+        const errorMessage =
+          data.non_field_errors[0] ||
+          "Failed to send reset code. Please check the email address.";
+        onApiError(errorMessage);
+      }
+
+      // MOCK BEHAVIOR
+      // await new Promise((resolve) => setTimeout(resolve, 1000));
+      // if (email) {
+      //   onApiSuccess("A password reset code has been sent to your email.");
+      //   setStep(2);
+      // } else {
+      //   onApiError("Please enter a valid email address.");
+      // }
+    } catch (error) {
+      onApiError("An unexpected error occurred. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResetPassword = async (e: FormEvent) => {
     e.preventDefault();
     if (password !== confirmPassword) {
-      alert("Passwords do not match.");
+      onApiError("Passwords do not match.");
       return;
     }
-    const users = JSON.parse(localStorage.getItem("users") || "{}");
-    if (!users[email]) {
-      alert("No account found with this email address.");
-      return;
+    setLoading(true);
+    try {
+      // NOTE: This is a placeholder for your actual API endpoint.
+      const response = await fetch(
+        `${API_BASE_URL}/user/auth/reset-password/confirm/`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: email,
+            code: code,
+            new_password: password,
+          }),
+        }
+      );
+      console.log(response);
+      if (response.status === 204) {
+        onApiSuccess(
+          "Password has been reset successfully. Please log in with your new password."
+        );
+        onSwitchToLogin();
+      } else {
+        const data = await response.json();
+        const errorMessage =
+          data.non_field_errors[0] ||
+          "Failed to reset password. The code may be invalid or expired.";
+        onApiError(errorMessage);
+      }
+
+      // MOCK BEHAVIOR
+      // await new Promise((resolve) => setTimeout(resolve, 1000));
+      // if (code === "123456") {
+      //   onApiSuccess(
+      //     "Password has been reset successfully. Please log in with your new password."
+      //   );
+      //   onSwitchToLogin();
+      // } else {
+      //   onApiError(
+      //     "Failed to reset password. The code may be invalid or expired."
+      //   );
+      // }
+    } catch (error) {
+      console.error("Reset password error:", error);
+      onApiError("An unexpected error occurred. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    users[email].password = password;
-    localStorage.setItem("users", JSON.stringify(users));
-    alert(
-      "Password has been reset successfully. Please log in with your new password."
-    );
-    onSwitchToLogin();
   };
 
   return (
     <div className="auth-container">
       <BrandHeader />
       <h2>Reset Password</h2>
-      <form className="auth-form" onSubmit={handleResetPassword}>
-        <div className="form-group">
-          <label htmlFor="reset-email">Email</label>
-          <input
-            id="reset-email"
-            type="email"
-            className="form-input"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="new-password">New Password</label>
-          <input
-            id="new-password"
-            type="password"
-            className="form-input"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="confirm-password">Confirm New Password</label>
-          <input
-            id="confirm-password"
-            type="password"
-            className="form-input"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-          />
-        </div>
-        <button type="submit" className="btn btn-primary">
-          Reset Password
-        </button>
-      </form>
+      {step === 1 ? (
+        <form className="auth-form" onSubmit={handleSendCode}>
+          <p className="form-description">
+            Enter your email address and we'll send you a code to reset your
+            password.
+          </p>
+          <div className="form-group">
+            <label htmlFor="reset-email">Email</label>
+            <input
+              id="reset-email"
+              type="email"
+              className="form-input"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              aria-label="Email"
+            />
+          </div>
+          <button type="submit" className="btn btn-primary" disabled={loading}>
+            {loading ? "Sending..." : "Send Reset Code"}
+          </button>
+        </form>
+      ) : (
+        <form className="auth-form" onSubmit={handleResetPassword}>
+          <p className="form-description">
+            A reset code has been sent to <strong>{email}</strong>. Please enter
+            the code and your new password below.
+          </p>
+          <div className="form-group">
+            <label htmlFor="reset-code">Reset Code</label>
+            <input
+              id="reset-code"
+              type="text"
+              className="form-input"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              required
+              aria-label="Reset Code"
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="new-password">New Password</label>
+            <input
+              id="new-password"
+              type="password"
+              className="form-input"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              aria-label="New Password"
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="confirm-password">Confirm New Password</label>
+            <input
+              id="confirm-password"
+              type="password"
+              className="form-input"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              aria-label="Confirm New Password"
+            />
+          </div>
+          <button type="submit" className="btn btn-primary" disabled={loading}>
+            {loading ? "Resetting..." : "Reset Password"}
+          </button>
+        </form>
+      )}
       <div className="auth-switch">
         Remember your password?{" "}
         <button onClick={onSwitchToLogin} className="btn-link">
@@ -579,7 +692,7 @@ const UserMenu = ({ user, onLogout, onNavigate }) => {
   );
 };
 
-const ProductCard = ({ product, onAddToCart }) => {
+const ProductCard = ({ product, onAddToCart,onShowToast }) => {
   const [quantity, setQuantity] = useState(1);
   const [bidPrice, setBidPrice] = useState(product.price.toFixed(2));
 
@@ -587,13 +700,9 @@ const ProductCard = ({ product, onAddToCart }) => {
     const bid = parseFloat(bidPrice);
     if (quantity > 0 && bid > 0) {
       onAddToCart(product, quantity, bid);
-      alert(
-        `${quantity} of ${
-          product.name
-        } added to cart with a bid of $${bid.toFixed(2)} each!`
-      );
+      onShowToast(`${quantity} of ${product.name} added to cart!`, "success");
     } else {
-      alert("Please enter a valid quantity and bid price.");
+      onShowToast("Please enter a valid quantity and bid price.","error");
     }
   };
 
@@ -603,7 +712,7 @@ const ProductCard = ({ product, onAddToCart }) => {
       <div className="product-card-content">
         <h3>{product.name}</h3>
         <p className="product-price">
-          Standard Price: ${product.price.toFixed(2)}
+          Standard Price: {product.price.toFixed(2)} RS
         </p>
         <p>{product.description}</p>
         <div className="product-actions">
@@ -620,7 +729,7 @@ const ProductCard = ({ product, onAddToCart }) => {
             />
           </div>
           <div className="form-group">
-            <label htmlFor={`bid-${product.id}`}>Your Bid ($)</label>
+            <label htmlFor={`bid-${product.id}`}>Your Bid (RS)</label>
             <input
               id={`bid-${product.id}`}
               type="number"
@@ -647,38 +756,79 @@ const CatalogPage = ({
   cartItemCount,
   onNavigate,
   onAddToCart,
+  onShowToast
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [displayedProducts, setDisplayedProducts] = useState([]);
-  const [visibleCount, setVisibleCount] = useState(8);
-  const [filteredProducts, setFilteredProducts] = useState(STATIC_PRODUCTS);
+  const [products, setProducts] = useState([]);
+  const [nextUrl, setNextUrl] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isMobileSearchActive, setIsMobileSearchActive] = useState(false);
   const mobileSearchInputRef = useRef<HTMLInputElement>(null);
 
+  const fetchProducts = useCallback(
+    async (isNewSearch = false) => {
+      let url;
+      if (isNewSearch) {
+        const params = new URLSearchParams({ limit: "8" });
+        if (searchQuery) {
+          params.append("q", searchQuery);
+        }
+        url = `${API_BASE_URL}/inventory/products/?${params.toString()}`;
+      } else {
+        url = nextUrl;
+      }
+
+      if (!url || isLoading) return;
+      setIsLoading(true);
+
+      try {
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        const data = await response.json();
+        const transformedProducts = data.results.map((p) => ({
+          id: p.id,
+          name: p.name,
+          description:
+            p.description || `Stock: ${p.stock} | Barcode: ${p.barcode}`,
+          price: parseFloat(p.retailPrice),
+          imageUrl:
+            p.image_1 && !p.image_1.startsWith("http")
+              ? `${API_BASE_URL}${p.image_1}`
+              : p.image_1 || `https://picsum.photos/seed/${p.id}/400/300`, // Fallback image
+        }));
+
+        setProducts((prev) =>
+          isNewSearch ? transformedProducts : [...prev, ...transformedProducts]
+        );
+        setNextUrl(data.next);
+      } catch (error) {
+        console.error("Failed to fetch products:", error);
+        // Optionally, set an error state to show a message to the user
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [searchQuery, nextUrl, isLoading]
+  );
+
+  // Effect for handling search with debounce
   useEffect(() => {
-    const filtered = STATIC_PRODUCTS.filter((p) =>
-      p.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    setFilteredProducts(filtered);
-    setVisibleCount(8);
-    setDisplayedProducts(filtered.slice(0, 8));
+    const handler = setTimeout(() => {
+      fetchProducts(true);
+    }, 300); // 300ms debounce
+    return () => clearTimeout(handler);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery]);
 
-  const loadMoreProducts = () => {
-    if (isLoading || visibleCount >= filteredProducts.length) return;
-    setIsLoading(true);
-    setTimeout(() => {
-      const newVisibleCount = Math.min(
-        visibleCount + 4,
-        filteredProducts.length
-      );
-      setDisplayedProducts(filteredProducts.slice(0, newVisibleCount));
-      setVisibleCount(newVisibleCount);
-      setIsLoading(false);
-    }, 500);
-  };
+  const loadMoreProducts = useCallback(() => {
+    if (!isLoading && nextUrl) {
+      fetchProducts(false);
+    }
+  }, [isLoading, nextUrl, fetchProducts]);
 
+  // Effect for infinite scroll
   useEffect(() => {
     const handleScroll = () => {
       if (
@@ -697,6 +847,8 @@ const CatalogPage = ({
       mobileSearchInputRef.current?.focus();
     }
   }, [isMobileSearchActive]);
+
+  const hasMore = nextUrl !== null;
 
   return (
     <div className="catalog-container">
@@ -763,21 +915,29 @@ const CatalogPage = ({
         )}
       </header>
       <main>
-        <div className="product-grid">
-          {displayedProducts.map((product) => (
-            <ProductCard
-              key={`${product.id}-${searchQuery}`}
-              product={product}
-              onAddToCart={onAddToCart}
-            />
-          ))}
-        </div>
-        {isLoading && <div className="loader">Loading more products...</div>}
-        {!isLoading && displayedProducts.length === 0 && (
+        {products.length > 0 && (
+          <div className="product-grid">
+            {products.map((product) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                onAddToCart={onAddToCart}
+                onShowToast={onShowToast}
+              />
+            ))}
+          </div>
+        )}
+        {isLoading && <div className="loader">Loading...</div>}
+        {!isLoading && products.length === 0 && (
           <p className="empty-catalog-message">
             {searchQuery
               ? `No products found for "${searchQuery}".`
               : "No products available."}
+          </p>
+        )}
+        {!isLoading && !hasMore && products.length > 0 && (
+          <p className="end-of-results-message">
+            You've reached the end of the list.
           </p>
         )}
       </main>
@@ -829,10 +989,10 @@ const CartPage = ({
                   <div className="cart-item-details">
                     <h3>{item.name}</h3>
                     <p className="cart-item-bid-price">
-                      Your Bid: ${Number(item.bidPrice).toFixed(2)}
+                      Your Bid: {Number(item.bidPrice).toFixed(2)} Rs
                     </p>
                     <p className="cart-item-standard-price">
-                      Standard: ${item.price.toFixed(2)}
+                      Standard: {item.price.toFixed(2)} Rs
                     </p>
                   </div>
                   <div className="cart-item-actions">
@@ -859,7 +1019,7 @@ const CartPage = ({
                     </button>
                   </div>
                   <div className="cart-item-subtotal">
-                    ${(item.bidPrice * item.quantity).toFixed(2)}
+                    {(item.bidPrice * item.quantity).toFixed(2)} Rs
                   </div>
                 </div>
               ))}
@@ -868,7 +1028,7 @@ const CartPage = ({
               <h2>Order Summary</h2>
               <div className="summary-total">
                 <span>Total Bid Value</span>
-                <span>${calculateTotal()}</span>
+                <span>{calculateTotal()} Rs</span>
               </div>
               <form className="checkout-form" onSubmit={handlePlaceOrder}>
                 <div className="form-group">
@@ -1196,7 +1356,7 @@ function App() {
     switch (page) {
       case "catalog":
         return (
-            <>
+          <>
             <div className="toast-container">
               {toasts.map((toast) => (
                 <Toast
@@ -1207,21 +1367,21 @@ function App() {
               ))}
             </div>
             <CatalogPage
-            user={user}
-            onLogout={handleLogout}
-            cartItemCount={cart.reduce(
-              (count, item) => count + item.quantity,
-              0
-            )}
-            onNavigate={setPage}
-            onAddToCart={handleAddToCart}
-          />
-            </>
-          
+              user={user}
+              onLogout={handleLogout}
+              cartItemCount={cart.reduce(
+                (count, item) => count + item.quantity,
+                0
+              )}
+              onNavigate={setPage}
+              onAddToCart={handleAddToCart}
+              onShowToast={addToast}
+            />
+          </>
         );
       case "cart":
         return (
-            <>
+          <>
             <div className="toast-container">
               {toasts.map((toast) => (
                 <Toast
@@ -1232,18 +1392,17 @@ function App() {
               ))}
             </div>
             <CartPage
-            cart={cart}
-            onUpdateQuantity={handleUpdateCartQuantity}
-            onRemoveItem={handleRemoveFromCart}
-            onPlaceOrder={handlePlaceOrder}
-            onNavigateToCatalog={() => setPage("catalog")}
-          />
-            </>
-          
+              cart={cart}
+              onUpdateQuantity={handleUpdateCartQuantity}
+              onRemoveItem={handleRemoveFromCart}
+              onPlaceOrder={handlePlaceOrder}
+              onNavigateToCatalog={() => setPage("catalog")}
+            />
+          </>
         );
       case "profile":
         return (
-            <>
+          <>
             <div className="toast-container">
               {toasts.map((toast) => (
                 <Toast
@@ -1254,16 +1413,15 @@ function App() {
               ))}
             </div>
             <ProfilePage
-            user={user}
-            onNavigateToCatalog={() => setPage("catalog")}
-            onUpdateProfile={handleUpdateProfile}
-          />
-            </>
-          
+              user={user}
+              onNavigateToCatalog={() => setPage("catalog")}
+              onUpdateProfile={handleUpdateProfile}
+            />
+          </>
         );
       case "orders":
         return (
-            <>
+          <>
             <div className="toast-container">
               {toasts.map((toast) => (
                 <Toast
@@ -1274,15 +1432,14 @@ function App() {
               ))}
             </div>
             <OrdersPage
-            user={user}
-            onNavigateToCatalog={() => setPage("catalog")}
-          />
-            </>
-          
+              user={user}
+              onNavigateToCatalog={() => setPage("catalog")}
+            />
+          </>
         );
       case "register":
         return (
-            <>
+          <>
             <div className="toast-container">
               {toasts.map((toast) => (
                 <Toast
@@ -1293,17 +1450,16 @@ function App() {
               ))}
             </div>
             <RegisterPage
-            onSwitchToLogin={() => setPage("login")}
-            onApiSuccess={handleRegister}
-            onApiError={(msg) => addToast(msg, "error")}
-          />
-            </>
-          
+              onSwitchToLogin={() => setPage("login")}
+              onApiSuccess={handleRegister}
+              onApiError={(msg) => addToast(msg, "error")}
+            />
+          </>
         );
       case "resetPassword":
         return (
-        <>
-        <div className="toast-container">
+          <>
+            <div className="toast-container">
               {toasts.map((toast) => (
                 <Toast
                   key={toast.id}
@@ -1312,10 +1468,13 @@ function App() {
                 />
               ))}
             </div>
-        <ResetPasswordPage onSwitchToLogin={() => setPage("login")} />
-        </>
-        
-    );
+            <ResetPasswordPage
+              onSwitchToLogin={() => setPage("login")}
+              onApiSuccess={(msg) => addToast(msg, "success")}
+              onApiError={(msg) => addToast(msg, "error")}
+            />
+          </>
+        );
       case "login":
       default:
         return (

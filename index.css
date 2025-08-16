@@ -748,3 +748,12 @@ body {
     opacity: 1;
   }
 }
+
+
+.loader, .end-of-results-message {
+  text-align: center;
+  font-size: 1.25rem;
+  padding: 4rem;
+  color: var(--text-light-color);
+  font-weight: 500;
+}
