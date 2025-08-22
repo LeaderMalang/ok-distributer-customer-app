@@ -199,6 +199,41 @@ const CloseIcon = (props) => (
   </svg>
 );
 
+const InstagramIcon = (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+    </svg>
+);
+
+const XIcon = (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M18 6 6 18"></path>
+        <path d="m6 6 12 12"></path>
+    </svg>
+);
+
+const LinkedInIcon = (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+        <rect x="2" y="9" width="4" height="12"></rect>
+        <circle cx="4" cy="4" r="2"></circle>
+    </svg>
+);
+
+const FacebookIcon = (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
+    </svg>
+);
+
+const TikTokIcon = (props) => (
+  <svg  {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 12a4 4 0 1 0 4 4V4a2 2 0 1 0-4 0v12a4 4 0 0 0-4-4H4a2 2 0 1 1 0-4h4a2 2 0 1 1 0 4h4a2 2 0 1 1 0-4h4" />
+  </svg>
+);
+
 // --- Components ---
 
 const BrandHeader = () => (
@@ -894,8 +929,7 @@ const CatalogPage = ({
         const transformedProducts = data.results.map((p) => ({
           id: p.id,
           name: p.name,
-          description:
-            p.description || `Stock: ${p.stock} | Barcode: ${p.barcode}`,
+          description: `Packing: ${p.packing} | Barcode: ${p.barcode}`,
           price: parseFloat(p.retailPrice),
           imageUrl:
             p.image_1 && !p.image_1.startsWith("http")
@@ -1609,7 +1643,33 @@ const OrdersPage = ({ onNavigateToCatalog }) => {
     </div>
   );
 };
-
+const Footer = () => (
+  <footer className="app-footer">
+    <div className="footer-content">
+      <div className="social-links">
+        <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+          <InstagramIcon />
+        </a>
+        <a href="https://x.com" target="_blank" rel="noopener noreferrer" aria-label="X (formerly Twitter)">
+          <XIcon />
+        </a>
+        <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+          <LinkedInIcon />
+        </a>
+        <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+          <FacebookIcon />
+        </a>
+        <a href="https://tiktok.com" target="_blank" rel="noopener noreferrer" aria-label="TikTok">
+          <TikTokIcon />
+        </a>
+      </div>
+      <div className="footer-links">
+        <a href="http://Okdtts.com" target="_blank" rel="noopener noreferrer">Okdtts.com</a>
+        <span>© 2025 Ok Distributor. All Rights Reserved.</span>
+      </div>
+    </div>
+  </footer>
+);
 // --- Main App Component ---
 
 function App() {
@@ -1950,6 +2010,7 @@ function App() {
     <>
       {isInstallPromptVisible && <InstallPrompt onInstall={handleInstall} onDismiss={handleDismissInstall} />}
       {renderPage()}
+      <Footer />
     </>
   );
 }
