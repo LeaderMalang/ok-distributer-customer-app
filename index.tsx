@@ -4,7 +4,7 @@
  */
 import { useState, useEffect, FormEvent, useRef, FC, useCallback } from "react";
 import ReactDOM from "react-dom/client";
-const API_BASE_URL = "http://127.0.0.1:8000";
+const API_BASE_URL = "https://erp.okdtts.com";
 
 // --- Toast Notification Component ---
 interface ToastProps {
@@ -26,6 +26,22 @@ const Toast: FC<ToastProps> = ({ message, type, onClose }) => {
     </div>
   );
 };
+
+// --- Install Prompt Component ---
+const InstallPrompt = ({ onInstall, onDismiss }) => {
+    return (
+        <div className="install-prompt">
+            <p>Install the app for a better experience!</p>
+            <div className="install-prompt-actions">
+                <button onClick={onInstall} className="btn btn-primary">Install</button>
+                <button onClick={onDismiss} className="btn-icon">
+                    <CloseIcon width="16" height="16" />
+                </button>
+            </div>
+        </div>
+    );
+};
+
 // --- Static Data ---
 const STATIC_PRODUCTS = [
   {
@@ -486,89 +502,121 @@ const RegisterPage = ({ onSwitchToLogin, onApiSuccess, onApiError }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [businessImage, setBusinessImage] = useState(null);
-  const [latitude, setLatitude] = useState("");
-  const [longitude, setLongitude] = useState("");
-  const [locationStatus, setLocationStatus] = useState("");
   const [loading, setLoading] = useState(false);
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setBusinessImage(e.target.files[0]);
     }
   };
-  const handleGetLocation = () => {
-    if (!navigator.geolocation) {
-      setLocationStatus("Geolocation is not supported by your browser.");
-      return;
-    }
 
-    setLocationStatus("Getting location...");
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setLatitude(position.coords.latitude.toString());
-        setLongitude(position.coords.longitude.toString());
-        setLocationStatus("Location captured successfully!");
-      },
-      () => {
-        setLocationStatus(
-          "Unable to retrieve location. Please check browser permissions."
-        );
-      }
-    );
+  const handlePhoneNumberChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const input = e.target.value.replace(/\D/g, ""); // Remove non-digits
+    let formattedNumber = input.substring(0, 11); // Limit to 11 digits
+
+    if (formattedNumber.length > 4) {
+      formattedNumber = `${formattedNumber.slice(
+        0,
+        4
+      )}-${formattedNumber.slice(4)}`;
+    }
+    setPhoneNumber(formattedNumber);
   };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
-    setLoading(true);
-    const formData = new FormData();
-    formData.append("name", businessName);
-    formData.append("proprietor", proprietorName);
-    formData.append("phone", phoneNumber);
-    formData.append("email", email);
-    formData.append("license_no", drugLicense);
-    formData.append("license_expiry", licenseExpiry);
-    formData.append("password", password);
-    formData.append("address", address);
-    formData.append("latitude", parseFloat(latitude).toFixed(6));
-    formData.append("longitude", parseFloat(longitude).toFixed(6));
-    if (businessImage) {
-      formData.append("business_image", businessImage);
+    if (
+      !businessName ||
+      !proprietorName ||
+      !phoneNumber ||
+      !address ||
+      !drugLicense ||
+      !licenseExpiry ||
+      !email ||
+      !password
+    ) {
+      onApiError("All fields are required. Please fill out the entire form.");
+      return;
     }
+
+    if (phoneNumber.replace(/\D/g, "").length !== 11) {
+      onApiError(
+        "Please enter a valid 11-digit Pakistani phone number (e.g., 0300-1234567)."
+      );
+      return;
+    }
+
+    setLoading(true);
+
     try {
+      const position = await new Promise<GeolocationPosition>(
+        (resolve, reject) => {
+          if (!navigator.geolocation) {
+            reject(
+              new Error("Geolocation is not supported by your browser.")
+            );
+            return;
+          }
+          navigator.geolocation.getCurrentPosition(resolve, reject);
+        }
+      );
+
+      const currentLatitude = position.coords.latitude;
+      const currentLongitude = position.coords.longitude;
+
+      const formData = new FormData();
+      formData.append("name", businessName);
+      formData.append("proprietor", proprietorName);
+      formData.append("phone", phoneNumber);
+      formData.append("email", email);
+      formData.append("license_no", drugLicense);
+      formData.append("license_expiry", licenseExpiry);
+      formData.append("password", password);
+      formData.append("address", address);
+      formData.append("latitude", currentLatitude.toFixed(6));
+      formData.append("longitude", currentLongitude.toFixed(6));
+      if (businessImage) {
+        formData.append("business_image", businessImage);
+      }
+      
       const response = await fetch(
-        "http://127.0.0.1:8000/user/auth/register/",
+        `${API_BASE_URL}/user/auth/register/`,
         {
           method: "POST",
-          // headers: {
-          //   "Content-Type": "application/json",
-          // },
-          // body: JSON.stringify({
-          //   name: businessName,
-          //   proprietor: proprietorName,
-          //   phone: phoneNumber,
-          //   email: email,
-          //   license_no: drugLicense,
-          //   license_expiry: licenseExpiry,
-          //   password: password,
-          //   address: address,
-          //   business_image:businessImage
-          // }),
           body: formData,
         }
       );
       const data = await response.json();
       if (!response.ok) {
-        //const errorData = await response.json();
-        // Flatten errors if they are in an object
         const errorMessage = Object.values(data).flat().join("\n");
-        onApiError(errorMessage || "Registration failed.");
+        throw new Error(errorMessage || "Registration failed.");
       } else {
         onApiSuccess(data.message);
       }
-
-      //localStorage.setItem('users', JSON.stringify(users));
-      //onRegister({ name: proprietorName, email });
     } catch (error) {
-      onApiError(error.message);
+       let errorMessage = "An unexpected error occurred during registration.";
+       if (error instanceof GeolocationPositionError) {
+           switch (error.code) {
+               case error.PERMISSION_DENIED:
+                   errorMessage = "Location permission denied. Please allow location access to register.";
+                   break;
+               case error.POSITION_UNAVAILABLE:
+                   errorMessage = "Location information is unavailable. Please check your device settings.";
+                   break;
+               case error.TIMEOUT:
+                   errorMessage = "The request to get your location timed out. Please try again.";
+                   break;
+               default:
+                   errorMessage = "Failed to get location. Please ensure location services are enabled.";
+                   break;
+           }
+       } else if (error instanceof Error) {
+           errorMessage = error.message;
+       }
+       onApiError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -609,8 +657,9 @@ const RegisterPage = ({ onSwitchToLogin, onApiSuccess, onApiError }) => {
             type="tel"
             className="form-input"
             value={phoneNumber}
-            onChange={(e) => setPhoneNumber(e.target.value)}
+            onChange={handlePhoneNumberChange}
             required
+            placeholder="0347-6914936"
             aria-label="Phone Number"
           />
         </div>
@@ -625,45 +674,6 @@ const RegisterPage = ({ onSwitchToLogin, onApiSuccess, onApiError }) => {
             required
             aria-label="Address"
           />
-        </div>
-        <div className="form-group">
-          <label>Business Location</label>
-          <div className="location-group">
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={handleGetLocation}
-            >
-              Get Current Location
-            </button>
-            <p className="location-status">{locationStatus}</p>
-          </div>
-          <div className="location-coords">
-            <div className="form-group">
-              <label htmlFor="latitude">Latitude</label>
-              <input
-                id="latitude"
-                type="text"
-                className="form-input"
-                value={latitude}
-                readOnly
-                aria-label="Latitude"
-                placeholder="Latitude"
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="longitude">Longitude</label>
-              <input
-                id="longitude"
-                type="text"
-                className="form-input"
-                value={longitude}
-                readOnly
-                aria-label="Longitude"
-                placeholder="Longitude"
-              />
-            </div>
-          </div>
         </div>
         <div className="form-group">
           <label htmlFor="business-image">Business Image</label>
@@ -724,8 +734,8 @@ const RegisterPage = ({ onSwitchToLogin, onApiSuccess, onApiError }) => {
             aria-label="Password"
           />
         </div>
-        <button type="submit" className="btn btn-primary">
-          Register
+        <button type="submit" className="btn btn-primary" disabled={loading}>
+          {loading ? "Registering..." : "Register"}
         </button>
       </form>
       <div className="auth-switch">
@@ -1388,7 +1398,7 @@ const OrdersPage = ({ onNavigateToCatalog }) => {
       setError(null);
       const token = localStorage.getItem("token");
       const currentOffset = isNewSearch ? 0 : offset;
-
+      const customer_id=JSON.parse(localStorage.getItem('party')).id
       const params = new URLSearchParams({
         limit: String(limit),
         offset: String(currentOffset),
@@ -1403,7 +1413,7 @@ const OrdersPage = ({ onNavigateToCatalog }) => {
 
       try {
         const response = await fetch(
-          `${API_BASE_URL}/sales/invoices/?${params.toString()}`,
+          `${API_BASE_URL}/ecommerce/orders/customer/${customer_id}/?${params.toString()}`,
           {
             headers: { Authorization: `Token ${token}` },
           }
@@ -1472,6 +1482,8 @@ const OrdersPage = ({ onNavigateToCatalog }) => {
             >
               <option value="">All Statuses</option>
               <option value="Pending">Pending</option>
+              <option value="confirmed">Confirmed</option>
+
               <option value="Completed">Completed</option>
               <option value="Cancelled">Cancelled</option>
             </select>
@@ -1520,7 +1532,7 @@ const OrdersPage = ({ onNavigateToCatalog }) => {
                   }
                 >
                   <div className="order-summary-item">
-                    <strong>Order ID:</strong> #{order.invoice_no || order.id}
+                    <strong>Order ID:</strong> #{order.order_no || order.id}
                   </div>
                   <div className="order-summary-item">
                     <strong>Date:</strong>{" "}
@@ -1528,7 +1540,7 @@ const OrdersPage = ({ onNavigateToCatalog }) => {
                   </div>
                   <div className="order-summary-item">
                     <strong>Total:</strong>{" "}
-                    {Number(order.grand_total).toFixed(2)} RS
+                    {Number(order.total_amount).toFixed(2)} RS
                   </div>
                   <div className="order-summary-item">
                     <strong>Status:</strong>{" "}
@@ -1557,7 +1569,7 @@ const OrdersPage = ({ onNavigateToCatalog }) => {
                         <div key={item.id} className="order-item">
                           <div className="order-item-info">
                             <span>
-                              <strong>Product ID:</strong> {item.product}
+                              <strong>Product ID:</strong> {item.product.name}
                             </span>
                             <span>
                               <strong>Qty:</strong> {item.quantity}
@@ -1566,11 +1578,11 @@ const OrdersPage = ({ onNavigateToCatalog }) => {
                           <div className="order-item-price">
                             <span>
                               <strong>Rate:</strong>{" "}
-                              {Number(item.rate).toFixed(2)} RS
+                              {Number(item.price).toFixed(2)} RS
                             </span>
                             <span>
                               <strong>Bid:</strong>{" "}
-                              {Number(item.bid_amount).toFixed(2)} RS
+                              {Number(item.bid_price).toFixed(2)} RS
                             </span>
                           </div>
                         </div>
@@ -1606,6 +1618,9 @@ function App() {
   const [cart, setCart] = useState([]);
   const [toasts, setToasts] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [installPromptEvent, setInstallPromptEvent] = useState(null);
+  const [isInstallPromptVisible, setIsInstallPromptVisible] = useState(false);
+
   useEffect(() => {
     const loggedInUser = sessionStorage.getItem("user");
     if (loggedInUser) {
@@ -1617,6 +1632,36 @@ function App() {
       }
     }
   }, []);
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e) => {
+        e.preventDefault();
+        const dismissed = localStorage.getItem('installPromptDismissed');
+        if (!dismissed) {
+            setInstallPromptEvent(e);
+            setIsInstallPromptVisible(true);
+        }
+    };
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    return () => {
+        window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
+  }, []);
+
+  const handleInstall = async () => {
+    if (!installPromptEvent) return;
+    installPromptEvent.prompt();
+    const { outcome } = await installPromptEvent.userChoice;
+    console.log(`User response to the install prompt: ${outcome}`);
+    setIsInstallPromptVisible(false);
+    setInstallPromptEvent(null);
+    localStorage.setItem('installPromptDismissed', 'true');
+  };
+
+  const handleDismissInstall = () => {
+      setIsInstallPromptVisible(false);
+      localStorage.setItem('installPromptDismissed', 'true');
+  };
 
   const addToast = (message, type) => {
     const id = Date.now();
@@ -1702,45 +1747,24 @@ function App() {
     );
     setIsSubmitting(true);
     const payload = {
-      invoice_no:"INV-" + Date.now(),
-      company_invoice_number:null,
-      warehouse: 1,
-      salesman: 1,
-      booking_man_id: 1,
-      supplying_man_id: 1,
-      delivery_man_id: 1,
-      sub_total:total,
-      discount:0,
-      tax:0,
-      net_amount:total,
-      grand_total:total,
+      order_no:"EO-" + Date.now(),
       total_amount:total,
       paid_amount:0,
-      qr_code:"",
-      city_id:4,
-      area_id:1,
       customer: JSON.parse(party).id,
       date: new Date().toISOString().split("T")[0],
       address: deliveryAddress,
       items: cart.map((item) => ({
         product: item.id,
-        batch: null,
-        rate: String(item.price),
-        bonus:"0",
-        packing:10,
-        discount1:"0",
-        discount2:"0",
+        price: String(item.price),
         amount: String(item.bidPrice * item.quantity),
-        net_amount: String(item.bidPrice * item.quantity),
         quantity: item.quantity,
-        bid_amount: String(item.bidPrice),
+        bid_price: String(item.bidPrice),
       })),
-      payment_method: "Credit",
       status: "Pending",
     };
 
     try {
-      const response = await fetch(`${API_BASE_URL}/sales/invoices/`, {
+      const response = await fetch(`${API_BASE_URL}/ecommerce/orders/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -1856,7 +1880,6 @@ function App() {
               ))}
             </div>
             <OrdersPage
-              user={user}
               onNavigateToCatalog={() => setPage("catalog")}
             />
           </>
@@ -1923,7 +1946,12 @@ function App() {
     }
   };
 
-  return <>{renderPage()}</>;
+  return (
+    <>
+      {isInstallPromptVisible && <InstallPrompt onInstall={handleInstall} onDismiss={handleDismissInstall} />}
+      {renderPage()}
+    </>
+  );
 }
 
 const root = ReactDOM.createRoot(document.getElementById("root"));

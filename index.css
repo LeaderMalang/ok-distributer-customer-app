@@ -758,44 +758,6 @@ body {
   font-weight: 500;
 }
 
-
-
-/* Location Fields */
-.location-group {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 0.75rem;
-}
-
-.location-group .btn-secondary {
-  flex-shrink: 0;
-  padding: 0.5rem 1rem;
-}
-
-.location-status {
-  font-size: 0.8rem;
-  color: var(--text-light-color);
-  margin: 0;
-  text-align: left;
-}
-
-.location-coords {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-}
-
-.location-coords .form-group {
-  margin-bottom: 0;
-}
-
-.location-coords input {
-  background-color: var(--secondary-color);
-  cursor: not-allowed;
-}
-
-
 .form-input[type="file"] {
   padding: 0.5rem;
   border-style: dashed;
@@ -881,4 +843,69 @@ body {
 .load-more-container {
     text-align: center;
     margin: 2rem 0;
+}
+
+/* --- Install Prompt --- */
+.install-prompt {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  border-radius: var(--border-radius);
+  box-shadow: 0 8px 16px -4px rgba(9, 30, 66, 0.25), 0 0 1px rgba(9, 30, 66, 0.31);
+  padding: 1rem 1.5rem;
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  animation: slide-in 0.5s ease-out;
+}
+
+.install-prompt p {
+  margin: 0;
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+.install-prompt-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.install-prompt-actions .btn-primary {
+    padding: 0.5rem 1rem;
+}
+
+.install-prompt-actions .btn-icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.install-prompt-actions .btn-icon svg {
+    width: 16px;
+    height: 16px;
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateY(100px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 768px) {
+    .install-prompt {
+        bottom: 1rem;
+        left: 1rem;
+        right: 1rem;
+        justify-content: space-between;
+    }
 }
