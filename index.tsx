@@ -4,7 +4,7 @@
  */
 import { useState, useEffect, FormEvent, useRef, FC, useCallback } from "react";
 import ReactDOM from "react-dom/client";
-const API_BASE_URL = "https://erp.okdtts.com";
+const API_BASE_URL = "http://127.0.0.1:8000";
 
 // --- Toast Notification Component ---
 interface ToastProps {
@@ -29,17 +29,19 @@ const Toast: FC<ToastProps> = ({ message, type, onClose }) => {
 
 // --- Install Prompt Component ---
 const InstallPrompt = ({ onInstall, onDismiss }) => {
-    return (
-        <div className="install-prompt">
-            <p>Install the app for a better experience!</p>
-            <div className="install-prompt-actions">
-                <button onClick={onInstall} className="btn btn-primary">Install</button>
-                <button onClick={onDismiss} className="btn-icon">
-                    <CloseIcon width="16" height="16" />
-                </button>
-            </div>
-        </div>
-    );
+  return (
+    <div className="install-prompt">
+      <p>Install the app for a better experience!</p>
+      <div className="install-prompt-actions">
+        <button onClick={onInstall} className="btn btn-primary">
+          Install
+        </button>
+        <button onClick={onDismiss} className="btn-icon">
+          <CloseIcon width="16" height="16" />
+        </button>
+      </div>
+    </div>
+  );
 };
 
 // --- Static Data ---
@@ -200,36 +202,91 @@ const CloseIcon = (props) => (
 );
 
 const InstagramIcon = (props) => (
-    <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
-        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
-        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
-    </svg>
+  <svg
+    {...props}
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+  </svg>
 );
 
 const XIcon = (props) => (
-    <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M18 6 6 18"></path>
-        <path d="m6 6 12 12"></path>
-    </svg>
+  <svg
+    {...props}
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M18 6 6 18"></path>
+    <path d="m6 6 12 12"></path>
+  </svg>
 );
 
 const LinkedInIcon = (props) => (
-    <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
-        <rect x="2" y="9" width="4" height="12"></rect>
-        <circle cx="4" cy="4" r="2"></circle>
-    </svg>
+  <svg
+    {...props}
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+    <rect x="2" y="9" width="4" height="12"></rect>
+    <circle cx="4" cy="4" r="2"></circle>
+  </svg>
 );
 
 const FacebookIcon = (props) => (
-    <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
-    </svg>
+  <svg
+    {...props}
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
+  </svg>
 );
 
 const TikTokIcon = (props) => (
-  <svg  {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    {...props}
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <path d="M12 12a4 4 0 1 0 4 4V4a2 2 0 1 0-4 0v12a4 4 0 0 0-4-4H4a2 2 0 1 1 0-4h4a2 2 0 1 1 0 4h4a2 2 0 1 1 0-4h4" />
   </svg>
 );
@@ -253,6 +310,7 @@ const LoginPage = ({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isSalesLogin, setIsSalesLogin] = useState(false);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -267,31 +325,53 @@ const LoginPage = ({
       console.log(data);
       if (response.ok) {
         localStorage.setItem("token", data.token);
-        localStorage.setItem("party", JSON.stringify(data.party));
-        onLogin({ name: data.party.name, email });
+        if (data.employee && (data.role === "SALES" || isSalesLogin)) {
+          localStorage.setItem("employee", JSON.stringify(data.employee));
+          onLogin(
+            { name: data.employee.name, email: data.employee.email || email },
+            "sales"
+          );
+        } else if (data.party) {
+          localStorage.setItem("party", JSON.stringify(data.party));
+          onLogin({ name: data.party.name, email }, "customer");
+        } else {
+          onApiError(
+            "Login successful, but user role could not be determined."
+          );
+        }
       } else {
         const errorMessage =
-          data.non_field_errors[0] ||
+          data.non_field_errors?.[0] ||
           "Login failed. Please check your credentials.";
         onApiError(errorMessage);
       }
     } catch (error) {
-      console.error('Login error:', error.non_field_errors[0]);
+      console.error("Login error:", error);
       onApiError("An unexpected error occurred. Please try again.");
     } finally {
       setLoading(false);
     }
-    // const users = JSON.parse(localStorage.getItem("users") || "{}");
-    // if (users[email] && users[email].password === password) {
-    //   onLogin({ name: users[email].proprietorName, email });
-    // } else {
-    //   alert("Invalid email or password.");
-    // }
   };
 
   return (
     <div className="auth-container">
       <BrandHeader />
+      <div className="login-toggle">
+        <button
+          className={!isSalesLogin ? "active" : ""}
+          onClick={() => setIsSalesLogin(false)}
+          aria-pressed={!isSalesLogin}
+        >
+          Customer Login
+        </button>
+        <button
+          className={isSalesLogin ? "active" : ""}
+          onClick={() => setIsSalesLogin(true)}
+          aria-pressed={isSalesLogin}
+        >
+          Sales Rep Login
+        </button>
+      </div>
       <form className="auth-form" onSubmit={handleSubmit}>
         <div className="form-group">
           <label htmlFor="email">Email</label>
@@ -326,16 +406,18 @@ const LoginPage = ({
             Forgot Password?
           </button>
         </div>
-        <button type="submit" className="btn btn-primary">
-          Login
+        <button type="submit" className="btn btn-primary" disabled={loading}>
+          {loading ? "Logging in..." : "Login"}
         </button>
       </form>
-      <div className="auth-switch">
-        Don't have an account?{" "}
-        <button onClick={onSwitchToRegister} className="btn-link">
-          Register
-        </button>
-      </div>
+      {!isSalesLogin && (
+        <div className="auth-switch">
+          Don't have an account?{" "}
+          <button onClick={onSwitchToRegister} className="btn-link">
+            Register
+          </button>
+        </div>
+      )}
     </div>
   );
 };
@@ -373,15 +455,6 @@ const ResetPasswordPage = ({ onSwitchToLogin, onApiSuccess, onApiError }) => {
           "Failed to send reset code. Please check the email address.";
         onApiError(errorMessage);
       }
-
-      // MOCK BEHAVIOR
-      // await new Promise((resolve) => setTimeout(resolve, 1000));
-      // if (email) {
-      //   onApiSuccess("A password reset code has been sent to your email.");
-      //   setStep(2);
-      // } else {
-      //   onApiError("Please enter a valid email address.");
-      // }
     } catch (error) {
       onApiError("An unexpected error occurred. Please try again.");
     } finally {
@@ -423,19 +496,6 @@ const ResetPasswordPage = ({ onSwitchToLogin, onApiSuccess, onApiError }) => {
           "Failed to reset password. The code may be invalid or expired.";
         onApiError(errorMessage);
       }
-
-      // MOCK BEHAVIOR
-      // await new Promise((resolve) => setTimeout(resolve, 1000));
-      // if (code === "123456") {
-      //   onApiSuccess(
-      //     "Password has been reset successfully. Please log in with your new password."
-      //   );
-      //   onSwitchToLogin();
-      // } else {
-      //   onApiError(
-      //     "Failed to reset password. The code may be invalid or expired."
-      //   );
-      // }
     } catch (error) {
       console.error("Reset password error:", error);
       onApiError("An unexpected error occurred. Please try again.");
@@ -545,17 +605,14 @@ const RegisterPage = ({ onSwitchToLogin, onApiSuccess, onApiError }) => {
     }
   };
 
-  const handlePhoneNumberChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handlePhoneNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target.value.replace(/\D/g, ""); // Remove non-digits
     let formattedNumber = input.substring(0, 11); // Limit to 11 digits
 
     if (formattedNumber.length > 4) {
-      formattedNumber = `${formattedNumber.slice(
-        0,
+      formattedNumber = `${formattedNumber.slice(0, 4)}-${formattedNumber.slice(
         4
-      )}-${formattedNumber.slice(4)}`;
+      )}`;
     }
     setPhoneNumber(formattedNumber);
   };
@@ -590,9 +647,7 @@ const RegisterPage = ({ onSwitchToLogin, onApiSuccess, onApiError }) => {
       const position = await new Promise<GeolocationPosition>(
         (resolve, reject) => {
           if (!navigator.geolocation) {
-            reject(
-              new Error("Geolocation is not supported by your browser.")
-            );
+            reject(new Error("Geolocation is not supported by your browser."));
             return;
           }
           navigator.geolocation.getCurrentPosition(resolve, reject);
@@ -616,14 +671,11 @@ const RegisterPage = ({ onSwitchToLogin, onApiSuccess, onApiError }) => {
       if (businessImage) {
         formData.append("business_image", businessImage);
       }
-      
-      const response = await fetch(
-        `${API_BASE_URL}/user/auth/register/`,
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
+
+      const response = await fetch(`${API_BASE_URL}/user/auth/register/`, {
+        method: "POST",
+        body: formData,
+      });
       const data = await response.json();
       if (!response.ok) {
         const errorMessage = Object.values(data).flat().join("\n");
@@ -632,26 +684,30 @@ const RegisterPage = ({ onSwitchToLogin, onApiSuccess, onApiError }) => {
         onApiSuccess(data.message);
       }
     } catch (error) {
-       let errorMessage = "An unexpected error occurred during registration.";
-       if (error instanceof GeolocationPositionError) {
-           switch (error.code) {
-               case error.PERMISSION_DENIED:
-                   errorMessage = "Location permission denied. Please allow location access to register.";
-                   break;
-               case error.POSITION_UNAVAILABLE:
-                   errorMessage = "Location information is unavailable. Please check your device settings.";
-                   break;
-               case error.TIMEOUT:
-                   errorMessage = "The request to get your location timed out. Please try again.";
-                   break;
-               default:
-                   errorMessage = "Failed to get location. Please ensure location services are enabled.";
-                   break;
-           }
-       } else if (error instanceof Error) {
-           errorMessage = error.message;
-       }
-       onApiError(errorMessage);
+      let errorMessage = "An unexpected error occurred during registration.";
+      if (error instanceof GeolocationPositionError) {
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage =
+              "Location permission denied. Please allow location access to register.";
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage =
+              "Location information is unavailable. Please check your device settings.";
+            break;
+          case error.TIMEOUT:
+            errorMessage =
+              "The request to get your location timed out. Please try again.";
+            break;
+          default:
+            errorMessage =
+              "Failed to get location. Please ensure location services are enabled.";
+            break;
+        }
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      onApiError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -783,7 +839,7 @@ const RegisterPage = ({ onSwitchToLogin, onApiSuccess, onApiError }) => {
   );
 };
 
-const UserMenu = ({ user, onLogout, onNavigate }) => {
+const UserMenu = ({ user, role, onLogout, onNavigate, onChangeCustomer }) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
 
@@ -797,6 +853,8 @@ const UserMenu = ({ user, onLogout, onNavigate }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const canNavigate = typeof onNavigate === "function";
+
   return (
     <div className="user-menu" ref={menuRef}>
       <button
@@ -804,26 +862,53 @@ const UserMenu = ({ user, onLogout, onNavigate }) => {
         className="btn btn-secondary user-menu-button"
       >
         <UserIcon />
-        <span className="btn-text">{user.name}</span>
+        <span className="btn-text">{user?.name}</span>
       </button>
       {isOpen && (
         <div className="user-menu-dropdown">
-          <button
-            onClick={() => {
-              onNavigate("profile");
-              setIsOpen(false);
-            }}
-          >
-            My Profile
-          </button>
-          <button
-            onClick={() => {
-              onNavigate("orders");
-              setIsOpen(false);
-            }}
-          >
-            My Orders
-          </button>
+          {role === "customer" && onNavigate && (
+            <>
+              <button
+                onClick={() => {
+                  onNavigate("profile");
+                  setIsOpen(false);
+                }}
+              >
+                My Profile
+              </button>
+              <button
+                onClick={() => {
+                  onNavigate("orders");
+                  setIsOpen(false);
+                }}
+              >
+                My Orders
+              </button>
+            </>
+          )}
+
+          {role === "sales" && onNavigate && (
+            <>
+              <button
+                onClick={() => {
+                  onNavigate("salesman_orders");
+                  setIsOpen(false);
+                }}
+              >
+                My Orders
+              </button>
+              {onChangeCustomer && (
+                <button
+                  onClick={() => {
+                    onChangeCustomer();
+                    setIsOpen(false);
+                  }}
+                >
+                  Change Customer
+                </button>
+              )}
+            </>
+          )}
           <button onClick={onLogout}>Logout</button>
         </div>
       )}
@@ -831,17 +916,57 @@ const UserMenu = ({ user, onLogout, onNavigate }) => {
   );
 };
 
-const ProductCard = ({ product, onAddToCart, onShowToast }) => {
+const ProductCard = ({ product, onAddToCart, onShowToast, role }) => {
   const [quantity, setQuantity] = useState(1);
   const [bidPrice, setBidPrice] = useState(product.price.toFixed(2));
+  const [bidError, setBidError] = useState("");
+  const minBidPrice = product.price * 0.945;
+  const handleBidChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newBid = e.target.value;
+    setBidPrice(newBid);
 
+    const numericBid = parseFloat(newBid);
+    // Only validate if it's a number. Empty string or partial numbers (like '9.') are handled.
+    if (role === "sales") {
+      const numericBid = parseFloat(newBid);
+      if (!isNaN(numericBid) && numericBid < minBidPrice) {
+        setBidError(
+          ` bid range ${product.price} -- ${minBidPrice.toFixed(2)} RS`
+        );
+      } else {
+        setBidError("");
+      }
+    } else {
+      setBidError("");
+    }
+  };
   const handleAddToCart = () => {
+    if (bidPrice.trim() === "") {
+      onShowToast("Please enter a bid price.", "error");
+      return;
+    }
+
     const bid = parseFloat(bidPrice);
-    if (quantity > 0 && bid > 0) {
+    if (isNaN(bid) || bid <= 0) {
+      onShowToast("Please enter a valid bid price.", "error");
+      return;
+    }
+
+    if (role === "sales" && bid < minBidPrice) {
+      onShowToast(
+        `محترم!اگریہ قیمت ملے؟
+     
+ توہمارااگلی خریدای آپ سے!`,
+        "error"
+      );
+      return;
+    }
+
+    if (quantity > 0) {
       onAddToCart(product, quantity, bid);
       onShowToast(`${quantity} of ${product.name} added to cart!`, "success");
     } else {
-      onShowToast("Please enter a valid quantity and bid price.", "error");
+      onShowToast("Please enter a valid quantity.", "error");
     }
   };
 
@@ -867,6 +992,7 @@ const ProductCard = ({ product, onAddToCart, onShowToast }) => {
               aria-label="Quantity"
             />
           </div>
+
           <div className="form-group">
             <label htmlFor={`bid-${product.id}`}>Your Bid (RS)</label>
             <input
@@ -874,11 +1000,24 @@ const ProductCard = ({ product, onAddToCart, onShowToast }) => {
               type="number"
               className="form-input"
               value={bidPrice}
-              onChange={(e) => setBidPrice(e.target.value)}
-              min="0.01"
+              onChange={handleBidChange}
+              min={role === "sales" ? minBidPrice.toFixed(2) : "0.01"}
               step="0.01"
               aria-label="Bid Price"
+              aria-describedby={
+                bidError ? `bid-error-${product.id}` : undefined
+              }
+              aria-invalid={!!bidError}
             />
+            {bidError && (
+              <span
+                id={`bid-error-${product.id}`}
+                className="error-text"
+                role="alert"
+              >
+                {bidError}
+              </span>
+            )}
           </div>
           <button className="btn btn-primary" onClick={handleAddToCart}>
             Add to Cart
@@ -891,6 +1030,9 @@ const ProductCard = ({ product, onAddToCart, onShowToast }) => {
 
 const CatalogPage = ({
   user,
+  role,
+  selectedCustomer,
+  onChangeCustomer,
   onLogout,
   cartItemCount,
   onNavigate,
@@ -1014,7 +1156,16 @@ const CatalogPage = ({
           </div>
         ) : (
           <>
-            <h1>Welcome!</h1>
+            {role === "sales" ? (
+              <div className="sales-header-info">
+                <h1>{selectedCustomer.name}</h1>
+                <button onClick={onChangeCustomer} className="btn-link">
+                  Change Customer
+                </button>
+              </div>
+            ) : (
+              <h1>Welcome!</h1>
+            )}
             <div className="search-container">
               <input
                 type="search"
@@ -1043,10 +1194,13 @@ const CatalogPage = ({
                   <span className="cart-badge">{cartItemCount}</span>
                 )}
               </button>
+
               <UserMenu
                 user={user}
+                role={role}
                 onLogout={onLogout}
-                onNavigate={onNavigate}
+                onNavigate={role === "customer" ? onNavigate : onNavigate}
+                onChangeCustomer={role === "sales" ? onChangeCustomer : null}
               />
             </div>
           </>
@@ -1061,6 +1215,7 @@ const CatalogPage = ({
                 product={product}
                 onAddToCart={onAddToCart}
                 onShowToast={onShowToast}
+                role={role}
               />
             ))}
           </div>
@@ -1405,7 +1560,7 @@ const ProfilePage = ({
   );
 };
 
-const OrdersPage = ({ onNavigateToCatalog }) => {
+const OrdersPage = ({ onNavigateToCatalog, customerId }) => {
   const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
@@ -1424,6 +1579,11 @@ const OrdersPage = ({ onNavigateToCatalog }) => {
 
   const fetchOrders = useCallback(
     async (isNewSearch = false) => {
+      if (!customerId) {
+        setError("No customer selected.");
+        setIsLoading(false);
+        return;
+      }
       if (isNewSearch) {
         setIsLoading(true);
       } else {
@@ -1432,7 +1592,6 @@ const OrdersPage = ({ onNavigateToCatalog }) => {
       setError(null);
       const token = localStorage.getItem("token");
       const currentOffset = isNewSearch ? 0 : offset;
-      const customer_id=JSON.parse(localStorage.getItem('party')).id
       const params = new URLSearchParams({
         limit: String(limit),
         offset: String(currentOffset),
@@ -1447,7 +1606,7 @@ const OrdersPage = ({ onNavigateToCatalog }) => {
 
       try {
         const response = await fetch(
-          `${API_BASE_URL}/ecommerce/orders/customer/${customer_id}/?${params.toString()}`,
+          `${API_BASE_URL}/ecommerce/orders/customer/${customerId}/?${params.toString()}`,
           {
             headers: { Authorization: `Token ${token}` },
           }
@@ -1468,12 +1627,13 @@ const OrdersPage = ({ onNavigateToCatalog }) => {
         setIsFetchingMore(false);
       }
     },
-    [offset, activeFilters]
+    [offset, activeFilters, customerId]
   );
 
   useEffect(() => {
     fetchOrders(true);
-  }, [activeFilters]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeFilters, customerId]);
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
@@ -1643,28 +1803,624 @@ const OrdersPage = ({ onNavigateToCatalog }) => {
     </div>
   );
 };
+
+const SearchableSelect = ({
+  options,
+  value,
+  onChange,
+  placeholder,
+  disabled,
+}) => {
+  const [inputValue, setInputValue] = useState(value ? value.name : "");
+  const [showOptions, setShowOptions] = useState(false);
+  const wrapperRef = useRef(null);
+
+  useEffect(() => {
+    setInputValue(value ? value.name : "");
+  }, [value]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
+        setShowOptions(false);
+        setInputValue(value ? value.name : ""); // Reset on blur if no selection
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [value]);
+
+  const filteredOptions = (options || []).filter((option) =>
+    option.name.toLowerCase().includes(inputValue.toLowerCase())
+  );
+
+  const handleSelect = (option) => {
+    onChange(option);
+    setInputValue(option.name);
+    setShowOptions(false);
+  };
+
+  const handleClear = (e) => {
+    e.stopPropagation();
+    onChange(null);
+    setInputValue("");
+    wrapperRef.current?.querySelector("input")?.focus();
+  };
+
+  return (
+    <div className="searchable-select" ref={wrapperRef}>
+      <div className="searchable-select-input-wrapper">
+        <input
+          type="text"
+          className="form-input"
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          onFocus={() => setShowOptions(true)}
+          placeholder={placeholder}
+          disabled={disabled}
+          aria-label={placeholder}
+        />
+        {inputValue && !disabled && (
+          <button
+            type="button"
+            className="btn-icon clear-btn"
+            onClick={handleClear}
+            aria-label="Clear selection"
+          >
+            <CloseIcon width="14" height="14" />
+          </button>
+        )}
+      </div>
+      {showOptions && !disabled && (
+        <ul className="searchable-select-options">
+          {filteredOptions.length > 0 ? (
+            filteredOptions.map((option) => (
+              <li
+                key={option.id}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => handleSelect(option)}
+              >
+                {option.name}
+              </li>
+            ))
+          ) : (
+            <li className="no-options">No options found</li>
+          )}
+        </ul>
+      )}
+    </div>
+  );
+};
+
+const CustomerSearchPage = ({
+  onSelectCustomer,
+  user,
+  role,
+  onLogout,
+  onNavigate,
+}) => {
+  const [customers, setCustomers] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [cities, setCities] = useState([]);
+  const [areas, setAreas] = useState([]);
+  const [selectedCity, setSelectedCity] = useState(null);
+  const [selectedArea, setSelectedArea] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  // Fetch cities on component mount
+  useEffect(() => {
+    const fetchCities = async () => {
+      const token = localStorage.getItem("token");
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/management/cities/?limit=10000`,
+          {
+            headers: { Authorization: `Token ${token}` },
+          }
+        );
+        if (!response.ok) throw new Error("Failed to fetch cities.");
+        const data = await response.json();
+        setCities(data.results);
+      } catch (err) {
+        setError(err.message);
+      }
+    };
+    fetchCities();
+  }, []);
+
+  // Fetch areas when a city is selected
+  useEffect(() => {
+    if (!selectedCity) {
+      setAreas([]);
+      return;
+    }
+    const fetchAreas = async () => {
+      const token = localStorage.getItem("token");
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/management/cities/${selectedCity.id}/areas/?limit=10000`,
+          {
+            headers: { Authorization: `Token ${token}` },
+          }
+        );
+        if (!response.ok) throw new Error("Failed to fetch areas.");
+        const data = await response.json();
+        setAreas(data);
+      } catch (err) {
+        setError(err.message);
+      }
+    };
+    fetchAreas();
+  }, [selectedCity]);
+
+  const fetchCustomers = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    const token = localStorage.getItem("token");
+    const params = new URLSearchParams();
+    params.append("partyType", "customer");
+    if (searchQuery) params.append("q", searchQuery);
+    if (selectedCity) params.append("cityId", selectedCity.id);
+    if (selectedArea) params.append("areaId", selectedArea.id);
+
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/inventory/parties/?${params.toString()}`,
+        {
+          headers: { Authorization: `Token ${token}` },
+        }
+      );
+      if (!response.ok) throw new Error("Failed to fetch customers.");
+      const data = await response.json();
+      setCustomers(data.results);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [searchQuery, selectedCity, selectedArea]);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      fetchCustomers();
+    }, 500); // Debounce search
+    return () => clearTimeout(handler);
+  }, [fetchCustomers]);
+
+  return (
+    <div className="page-container">
+      <header className="catalog-header">
+        <h1>Select a Customer</h1>
+        <UserMenu
+          user={user}
+          role={role}
+          onLogout={onLogout}
+          onNavigate={onNavigate}
+          onChangeCustomer={null}
+        />
+      </header>
+      <main>
+        <div className="customer-search-filters orders-filter-bar">
+          <div className="form-group">
+            <SearchableSelect
+              options={cities}
+              value={selectedCity}
+              onChange={(city) => {
+                setSelectedCity(city);
+                setSelectedArea(null);
+              }}
+              placeholder="Filter by city"
+              disabled={false}
+            />
+          </div>
+          <div className="form-group">
+            <SearchableSelect
+              options={areas}
+              value={selectedArea}
+              onChange={setSelectedArea}
+              placeholder="Filter by area"
+              disabled={!selectedCity}
+            />
+          </div>
+          <div className="form-group">
+            <input
+              type="search"
+              placeholder="Search name, business, or phone..."
+              className="form-input"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              aria-label="Search Customers"
+            />
+          </div>
+        </div>
+
+        {isLoading && <div className="loader">Loading customers...</div>}
+        {error && <p className="error-message">Error: {error}</p>}
+        {!isLoading && !error && customers.length === 0 && (
+          <p className="empty-catalog-message">No customers found.</p>
+        )}
+        {!isLoading && !error && customers.length > 0 && (
+          <div className="customer-list">
+            {customers.map((customer) => (
+              <div key={customer.id} className="customer-card">
+                <div className="customer-card-details">
+                  <h3>{customer.name}</h3>
+                  <p>{customer.proprietor}</p>
+                  <p>{customer.address}</p>
+                  <p>{customer.phone}</p>
+                </div>
+                <button
+                  onClick={() => onSelectCustomer(customer)}
+                  className="btn btn-primary"
+                >
+                  Select
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </main>
+    </div>
+  );
+};
+const SalesmanOrdersPage = ({
+  user,
+  role,
+  onLogout,
+  onNavigate,
+  onChangeCustomer,
+  selectedCustomer,
+  onApiSuccess,
+  onApiError,
+}) => {
+  const [orders, setOrders] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
+  const [error, setError] = useState(null);
+  const [offset, setOffset] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [filters, setFilters] = useState({
+    searchTerm: "",
+    status: "",
+    startDate: "",
+    endDate: "",
+  });
+  const [activeFilters, setActiveFilters] = useState(filters);
+  const [expandedOrderId, setExpandedOrderId] = useState(null);
+  const limit = 10;
+  const employeeData = localStorage.getItem("employee");
+  const employeeId = employeeData ? JSON.parse(employeeData).id : null;
+
+  const fetchOrders = useCallback(
+    async (isNewSearch = false) => {
+      if (!employeeId) {
+        setError("Sales representative ID not found.");
+        setIsLoading(false);
+        return;
+      }
+      if (isNewSearch) {
+        setIsLoading(true);
+      } else {
+        setIsFetchingMore(true);
+      }
+      setError(null);
+      const token = localStorage.getItem("token");
+      const currentOffset = isNewSearch ? 0 : offset;
+      const params = new URLSearchParams({
+        limit: String(limit),
+        offset: String(currentOffset),
+      });
+      if (activeFilters.searchTerm)
+        params.append("searchTerm", activeFilters.searchTerm);
+      if (activeFilters.status) params.append("status", activeFilters.status);
+      if (activeFilters.startDate)
+        params.append("startDate", activeFilters.startDate);
+      if (activeFilters.endDate)
+        params.append("endDate", activeFilters.endDate);
+
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/ecommerce/orders/salesman/${employeeId}/customer/${selectedCustomer}/?${params.toString()}`,
+          {
+            headers: { Authorization: `Token ${token}` },
+          }
+        );
+        if (!response.ok) throw new Error("Failed to fetch orders.");
+        const data = await response.json();
+        setOrders((prev) =>
+          isNewSearch ? data.results : [...prev, ...data.results]
+        );
+        setOffset(currentOffset + limit);
+        setHasMore(data.next !== null);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+        setIsFetchingMore(false);
+      }
+    },
+    [offset, activeFilters, employeeId]
+  );
+
+  useEffect(() => {
+    fetchOrders(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeFilters]);
+
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    setFilters((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleFilterSubmit = (e) => {
+    e.preventDefault();
+    setActiveFilters(filters);
+    setOrders([]);
+    setOffset(0);
+  };
+
+  const handleStatusUpdate = async (orderId, newStatus) => {
+    const token = localStorage.getItem("token");
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/ecommerce/orders/${orderId}/status/?new_status=${newStatus}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Token ${token}`,
+          },
+          body: JSON.stringify({ status: newStatus }),
+        }
+      );
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || "Failed to update status.");
+      }
+      setOrders((prevOrders) =>
+        prevOrders.map((order) =>
+          order.id === orderId ? { ...order, status: newStatus } : order
+        )
+      );
+      onApiSuccess("Order status updated successfully.");
+    } catch (err) {
+      onApiError(err.message);
+    }
+  };
+
+  return (
+    <div className="page-container">
+      <header className="catalog-header">
+        <div className="header-title-group">
+          <h1>My Orders</h1>
+          <button
+            onClick={() => onNavigate("catalog")}
+            className="btn btn-secondary"
+          >
+            &larr; Back to Catalog
+          </button>
+        </div>
+        <div className="header-actions">
+          {user && (
+            <UserMenu
+              user={user}
+              role={role}
+              onLogout={onLogout}
+              onNavigate={onNavigate}
+              onChangeCustomer={onChangeCustomer}
+            />
+          )}
+        </div>
+      </header>
+      <main>
+        <form className="orders-filter-bar" onSubmit={handleFilterSubmit}>
+          <div className="form-group">
+            <input
+              name="searchTerm"
+              type="search"
+              className="form-input"
+              placeholder="Search Invoice # or Name"
+              value={filters.searchTerm}
+              onChange={handleFilterChange}
+            />
+          </div>
+          <div className="form-group">
+            <select
+              name="status"
+              className="form-input"
+              value={filters.status}
+              onChange={handleFilterChange}
+            >
+              <option value="">All Statuses</option>
+              <option value="Pending">Pending</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="Completed">Completed</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+          </div>
+          <div className="form-group">
+            <input
+              name="startDate"
+              type="date"
+              className="form-input"
+              value={filters.startDate}
+              onChange={handleFilterChange}
+            />
+          </div>
+          <div className="form-group">
+            <input
+              name="endDate"
+              type="date"
+              className="form-input"
+              value={filters.endDate}
+              onChange={handleFilterChange}
+            />
+          </div>
+          <button type="submit" className="btn btn-primary">
+            Apply
+          </button>
+        </form>
+
+        {isLoading ? (
+          <div className="loader">Loading orders...</div>
+        ) : error ? (
+          <p className="error-message">Error: {error}</p>
+        ) : orders.length === 0 ? (
+          <p className="empty-cart-message">
+            You have not placed any orders yet.
+          </p>
+        ) : (
+          <div className="orders-list">
+            {orders.map((order) => (
+              <div key={order.id} className="order-card">
+                <div
+                  className="order-summary"
+                  onClick={() =>
+                    setExpandedOrderId(
+                      expandedOrderId === order.id ? null : order.id
+                    )
+                  }
+                >
+                  <div className="order-summary-item">
+                    <strong>Customer:</strong> {order.customer.name}
+                  </div>
+                  <div className="order-summary-item">
+                    <strong>Order ID:</strong> #{order.order_no || order.id}
+                  </div>
+                  <div className="order-summary-item">
+                    <strong>Date:</strong>{" "}
+                    {new Date(order.date).toLocaleDateString()}
+                  </div>
+                  <div className="order-summary-item">
+                    <strong>Total:</strong>{" "}
+                    {Number(order.total_amount).toFixed(2)} RS
+                  </div>
+                  <div className="order-summary-item">
+                    <select
+                      value={order.status}
+                      onChange={(e) => {
+                        e.stopPropagation();
+                        handleStatusUpdate(order.id, e.target.value);
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                      className={`status-select status-${order.status?.toLowerCase()}`}
+                    >
+                      <option value="Pending">Pending</option>
+                      <option value="confirmed">Confirmed</option>
+                      <option value="Completed">Completed</option>
+                      <option value="Cancelled">Cancelled</option>
+                    </select>
+                  </div>
+                  <span
+                    className={`order-toggle ${
+                      expandedOrderId === order.id ? "expanded" : ""
+                    }`}
+                  >
+                    &#9660;
+                  </span>
+                </div>
+                {expandedOrderId === order.id && (
+                  <div className="order-details">
+                    <p>
+                      <strong>Delivery Address:</strong> {order.address}
+                    </p>
+                    <h4>Items:</h4>
+                    <div className="order-items-list">
+                      {order.items.map((item) => (
+                        <div key={item.id} className="order-item">
+                          <div className="order-item-info">
+                            <span>
+                              <strong>Product:</strong> {item.product.name}
+                            </span>
+                            <span>
+                              <strong>Qty:</strong> {item.quantity}
+                            </span>
+                          </div>
+                          <div className="order-item-price">
+                            <span>
+                              <strong>Rate:</strong>{" "}
+                              {Number(item.price).toFixed(2)} RS
+                            </span>
+                            <span>
+                              <strong>Bid:</strong>{" "}
+                              {Number(item.bid_price).toFixed(2)} RS
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+        {isFetchingMore && <div className="loader">Loading more...</div>}
+        {!isLoading && hasMore && !isFetchingMore && (
+          <div className="load-more-container">
+            <button
+              onClick={() => fetchOrders(false)}
+              className="btn btn-secondary"
+            >
+              Load More
+            </button>
+          </div>
+        )}
+      </main>
+    </div>
+  );
+};
+
 const Footer = () => (
   <footer className="app-footer">
     <div className="footer-content">
       <div className="social-links">
-        <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+        <a
+          href="https://instagram.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Instagram"
+        >
           <InstagramIcon />
         </a>
-        <a href="https://x.com" target="_blank" rel="noopener noreferrer" aria-label="X (formerly Twitter)">
+        <a
+          href="https://x.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="X (formerly Twitter)"
+        >
           <XIcon />
         </a>
-        <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+        <a
+          href="https://linkedin.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="LinkedIn"
+        >
           <LinkedInIcon />
         </a>
-        <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+        <a
+          href="https://facebook.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Facebook"
+        >
           <FacebookIcon />
         </a>
-        <a href="https://tiktok.com" target="_blank" rel="noopener noreferrer" aria-label="TikTok">
+        <a
+          href="https://tiktok.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="TikTok"
+        >
           <TikTokIcon />
         </a>
       </div>
       <div className="footer-links">
-        <a href="http://Okdtts.com" target="_blank" rel="noopener noreferrer">Okdtts.com</a>
+        <a href="http://Okdtts.com" target="_blank" rel="noopener noreferrer">
+          Okdtts.com
+        </a>
         <span>© 2025 Ok Distributor. All Rights Reserved.</span>
       </div>
     </div>
@@ -1673,8 +2429,10 @@ const Footer = () => (
 // --- Main App Component ---
 
 function App() {
-  const [page, setPage] = useState("login"); // 'login', 'register', 'resetPassword', 'catalog', 'cart', 'profile', 'orders'
+  const [page, setPage] = useState("login"); // 'login', 'register', 'resetPassword', 'catalog', 'cart', 'profile', 'orders', 'customer_selection'
   const [user, setUser] = useState(null);
+  const [role, setRole] = useState(null); // 'customer' or 'sales'
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [cart, setCart] = useState([]);
   const [toasts, setToasts] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -1683,9 +2441,11 @@ function App() {
 
   useEffect(() => {
     const loggedInUser = sessionStorage.getItem("user");
-    if (loggedInUser) {
+    const userRole = sessionStorage.getItem("role");
+    if (loggedInUser && userRole) {
       setUser(JSON.parse(loggedInUser));
-      setPage("catalog");
+      setRole(userRole);
+      setPage(userRole === "sales" ? "customer_selection" : "catalog");
       const savedCart = localStorage.getItem("cart");
       if (savedCart) {
         setCart(JSON.parse(savedCart));
@@ -1695,16 +2455,19 @@ function App() {
 
   useEffect(() => {
     const handleBeforeInstallPrompt = (e) => {
-        e.preventDefault();
-        const dismissed = localStorage.getItem('installPromptDismissed');
-        if (!dismissed) {
-            setInstallPromptEvent(e);
-            setIsInstallPromptVisible(true);
-        }
+      e.preventDefault();
+      const dismissed = localStorage.getItem("installPromptDismissed");
+      if (!dismissed) {
+        setInstallPromptEvent(e);
+        setIsInstallPromptVisible(true);
+      }
     };
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
     return () => {
-        window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener(
+        "beforeinstallprompt",
+        handleBeforeInstallPrompt
+      );
     };
   }, []);
 
@@ -1715,12 +2478,12 @@ function App() {
     console.log(`User response to the install prompt: ${outcome}`);
     setIsInstallPromptVisible(false);
     setInstallPromptEvent(null);
-    localStorage.setItem('installPromptDismissed', 'true');
+    localStorage.setItem("installPromptDismissed", "true");
   };
 
   const handleDismissInstall = () => {
-      setIsInstallPromptVisible(false);
-      localStorage.setItem('installPromptDismissed', 'true');
+    setIsInstallPromptVisible(false);
+    localStorage.setItem("installPromptDismissed", "true");
   };
 
   const addToast = (message, type) => {
@@ -1738,26 +2501,44 @@ function App() {
     }
   }, [cart, user]);
 
-  const handleLogin = (loggedInUser) => {
+  const handleLogin = (loggedInUser, userRole) => {
     sessionStorage.setItem("user", JSON.stringify(loggedInUser));
-    
+    sessionStorage.setItem("role", userRole);
     setUser(loggedInUser);
-    setPage("catalog");
+    setRole(userRole);
+    if (userRole === "sales") {
+      setPage("customer_selection");
+    } else {
+      setPage("catalog");
+    }
   };
 
   const handleRegister = (registeredUser) => {
-    //handleLogin(registeredUser);
-    console.log("Registered User:", registeredUser);
     addToast(registeredUser, "success");
     setPage("login");
   };
 
   const handleLogout = () => {
     sessionStorage.removeItem("user");
+    sessionStorage.removeItem("role");
     localStorage.removeItem("cart");
     setUser(null);
+    setRole(null);
+    setSelectedCustomer(null);
     setCart([]);
     setPage("login");
+  };
+
+  const handleCustomerSelect = (customer) => {
+    setSelectedCustomer(customer);
+    setPage("catalog");
+  };
+
+  const handleChangeCustomer = () => {
+    setSelectedCustomer(null);
+    setCart([]); // Clear cart for the new customer
+    localStorage.removeItem("cart");
+    setPage("customer_selection");
   };
 
   const handleAddToCart = (product, quantity, bidPrice) => {
@@ -1798,19 +2579,34 @@ function App() {
       addToast("You must be logged in to place an order.", "error");
       return;
     }
-    const party=localStorage.getItem("party");
-    // console.log(JSON.parse(party).id);
-    // JSON.parse(party);
-     const total = cart.reduce(
+
+    const partyData = localStorage.getItem("party");
+    const partyId =
+      role === "sales"
+        ? selectedCustomer.id
+        : partyData
+        ? JSON.parse(partyData).id
+        : null;
+
+    if (!partyId) {
+      addToast("Could not identify the customer for this order.", "error");
+      return;
+    }
+
+    const total = cart.reduce(
       (sum, item) => sum + Number(item.bidPrice) * Number(item.quantity),
       0
     );
     setIsSubmitting(true);
     const payload = {
-      order_no:"EO-" + Date.now(),
-      total_amount:total,
-      paid_amount:0,
-      customer: JSON.parse(party).id,
+      order_no: "EO-" + Date.now(),
+      total_amount: total,
+      paid_amount: 0,
+      customer: partyId,
+      salesman:
+        role === "sales"
+          ? JSON.parse(localStorage.getItem("employee")).id
+          : null,
       date: new Date().toISOString().split("T")[0],
       address: deliveryAddress,
       items: cart.map((item) => ({
@@ -1833,7 +2629,7 @@ function App() {
         body: JSON.stringify(payload),
       });
       const data = await response.json();
-       
+
       console.log("Order response:", data);
       if (!response.ok) {
         const errorMessage = Object.values(data).flat().join("\n");
@@ -1842,7 +2638,12 @@ function App() {
       addToast("Order placed successfully!", "success");
       setCart([]);
       localStorage.removeItem("cart");
-      setPage("orders");
+      if (role === "customer") {
+        setPage("orders");
+      } else {
+        // For sales, stay on the current customer's catalog
+        setPage("catalog");
+      }
     } catch (error) {
       console.error("Order placement error:", error);
       addToast(error.message, "error");
@@ -1860,6 +2661,24 @@ function App() {
   };
 
   const renderPage = () => {
+    // For salesman, if no customer is selected, always show selection page.
+    if (
+      role === "sales" &&
+      !selectedCustomer &&
+      page !== "login" &&
+      page !== "resetPassword"
+    ) {
+      return (
+        <CustomerSearchPage
+          user={user}
+          role={role}
+          onSelectCustomer={handleCustomerSelect}
+          onLogout={handleLogout}
+          onNavigate={setPage}
+        />
+      );
+    }
+
     switch (page) {
       case "catalog":
         return (
@@ -1875,6 +2694,9 @@ function App() {
             </div>
             <CatalogPage
               user={user}
+              role={role}
+              selectedCustomer={selectedCustomer}
+              onChangeCustomer={handleChangeCustomer}
               onLogout={handleLogout}
               cartItemCount={cart.reduce(
                 (count, item) => count + item.quantity,
@@ -1928,6 +2750,13 @@ function App() {
           </>
         );
       case "orders":
+        const partyData = localStorage.getItem("party");
+        const customerIdForOrders =
+          role === "sales"
+            ? selectedCustomer.id
+            : partyData
+            ? JSON.parse(partyData).id
+            : null;
         return (
           <>
             <div className="toast-container">
@@ -1941,6 +2770,32 @@ function App() {
             </div>
             <OrdersPage
               onNavigateToCatalog={() => setPage("catalog")}
+              customerId={customerIdForOrders}
+            />
+          </>
+        );
+      case "salesman_orders":
+        const customerID = selectedCustomer.id;
+        return (
+          <>
+            <div className="toast-container">
+              {toasts.map((toast) => (
+                <Toast
+                  key={toast.id}
+                  {...toast}
+                  onClose={() => removeToast(toast.id)}
+                />
+              ))}
+            </div>
+            <SalesmanOrdersPage
+              user={user}
+              role={role}
+              onLogout={handleLogout}
+              onNavigate={setPage}
+              onChangeCustomer={handleChangeCustomer}
+              selectedCustomer={customerID}
+              onApiSuccess={(msg) => addToast(msg, "success")}
+              onApiError={(msg) => addToast(msg, "error")}
             />
           </>
         );
@@ -2008,7 +2863,12 @@ function App() {
 
   return (
     <>
-      {isInstallPromptVisible && <InstallPrompt onInstall={handleInstall} onDismiss={handleDismissInstall} />}
+      {isInstallPromptVisible && (
+        <InstallPrompt
+          onInstall={handleInstall}
+          onDismiss={handleDismissInstall}
+        />
+      )}
       {renderPage()}
       <Footer />
     </>
