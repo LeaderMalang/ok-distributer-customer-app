@@ -4,7 +4,7 @@
  */
 import { useState, useEffect, FormEvent, useRef, FC, useCallback } from "react";
 import ReactDOM from "react-dom/client";
-const API_BASE_URL = "http://127.0.0.1:8000";
+const API_BASE_URL = "https://erp.okdtts.com";
 
 // --- Toast Notification Component ---
 interface ToastProps {
@@ -921,6 +921,7 @@ const ProductCard = ({ product, onAddToCart, onShowToast, role }) => {
   const [bidPrice, setBidPrice] = useState(product.price.toFixed(2));
   const [bidError, setBidError] = useState("");
   const minBidPrice = product.price * 0.945;
+  const bidPrice12=product.price+.12*product.price;
   const handleBidChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newBid = e.target.value;
     setBidPrice(newBid);
@@ -972,11 +973,11 @@ const ProductCard = ({ product, onAddToCart, onShowToast, role }) => {
 
   return (
     <div className="product-card">
-      <img src={product.imageUrl} alt={product.name} />
+      {/* <img src={product.imageUrl} alt={product.name} /> */}
       <div className="product-card-content">
         <h3>{product.name}</h3>
         <p className="product-price">
-          Standard Price: {product.price.toFixed(2)} RS
+          Standard Price: {bidPrice12.toFixed(2)} RS 
         </p>
         <p>{product.description}</p>
         <div className="product-actions">
@@ -999,7 +1000,7 @@ const ProductCard = ({ product, onAddToCart, onShowToast, role }) => {
               id={`bid-${product.id}`}
               type="number"
               className="form-input"
-              value={bidPrice}
+              value={bidPrice12.toFixed(2)}
               onChange={handleBidChange}
               min={role === "sales" ? minBidPrice.toFixed(2) : "0.01"}
               step="0.01"
@@ -1072,7 +1073,7 @@ const CatalogPage = ({
           id: p.id,
           name: p.name,
           description: `Packing: ${p.packing} | Barcode: ${p.barcode}`,
-          price: parseFloat(p.retailPrice),
+          price: parseFloat(p.tradePrice),
           imageUrl:
             p.image_1 && !p.image_1.startsWith("http")
               ? `${API_BASE_URL}${p.image_1}`
