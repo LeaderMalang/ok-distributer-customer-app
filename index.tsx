@@ -4,7 +4,8 @@
  */
 import { useState, useEffect, FormEvent, useRef, FC, useCallback } from "react";
 import ReactDOM from "react-dom/client";
-const API_BASE_URL = "https://erp.okdtts.com";
+import { createPortal } from "react-dom";
+const API_BASE_URL = "http://127.0.0.1:8000";
 
 // --- Toast Notification Component ---
 interface ToastProps {
@@ -292,6 +293,153 @@ const TikTokIcon = (props) => (
 );
 
 // --- Components ---
+const PaymentModal = ({ order, onClose, onApiSuccess, onApiError }) => {
+  // FIX: Use a string for amount state to correctly handle controlled input behavior.
+  const remainingAmount = parseFloat(
+    (parseFloat(order.total_amount) - parseFloat(order.paid_amount)).toFixed(2)
+  );
+  const [amount, setAmount] = useState(String(remainingAmount));
+  const [description, setDescription] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const modalContentRef = useRef<HTMLDivElement>(null);
+  const [modalRoot, setModalRoot] = useState<HTMLElement | null>(null);
+
+  useEffect(() => {
+    // This ensures the portal root element exists in the DOM before we try to use it.
+    // The lookup is done once when the component mounts.
+    setModalRoot(document.getElementById("modal-root"));
+  }, []);
+
+  // Effect for improved modal UX: close on escape, close on outside click, prevent body scroll
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onClose(false);
+      }
+    };
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        modalContentRef.current &&
+        !modalContentRef.current.contains(event.target as Node)
+      ) {
+        onClose(false);
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("mousedown", handleClickOutside);
+    document.body.style.overflow = "hidden"; // Prevent background scrolling
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.body.style.overflow = "unset"; // Restore scrolling
+    };
+  }, [onClose]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    const numericAmount = parseFloat(amount);
+    if (isNaN(numericAmount) || numericAmount <= 0) {
+      onApiError("Please enter a valid amount.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+    const payload = {
+      date: new Date().toISOString().split("T")[0],
+      amount: numericAmount,
+      description: description,
+    };
+
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/sales/sale-invoices/${order.sale_invoice}/pay/`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Token ${token}`,
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (!response.ok) {
+        const data = await response.json();
+        const errorMessage =
+          Object.values(data).flat().join("\n") || "Payment failed.";
+        throw new Error(errorMessage);
+      }
+
+      onApiSuccess("Payment submitted successfully!");
+      onClose(true); // Pass true to indicate success and trigger refetch
+    } catch (error) {
+      onApiError(error.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  
+  // If the modal root isn't found in the DOM yet, don't render the portal.
+  if (!modalRoot) {
+    return null;
+  }
+
+  return createPortal(
+    <div className="modal-overlay" role="dialog" aria-modal="true">
+      <div className="modal-content" ref={modalContentRef}>
+        <h2>Record Payment for Order #{order.order_no || order.id}</h2>
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label htmlFor="payment-amount">Amount</label>
+            <input
+              id="payment-amount"
+              type="number"
+              className="form-input"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              required
+              step="0.01"
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="payment-description">Description</label>
+            <textarea
+              id="payment-description"
+              className="form-input"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Optional: Add a note..."
+              rows="3"
+            />
+          </div>
+          <div className="modal-actions">
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={() => onClose(false)}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="btn btn-primary"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Submitting..." : "Submit Payment"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>,
+    modalRoot
+  );
+};
 
 const BrandHeader = () => (
   <div className="brand-header">
@@ -628,7 +776,9 @@ const RegisterPage = ({ onSwitchToLogin, onApiSuccess, onApiError }) => {
       !drugLicense ||
       !licenseExpiry ||
       !email ||
-      !password
+      !password ||
+      !businessImage
+      
     ) {
       onApiError("All fields are required. Please fill out the entire form.");
       return;
@@ -666,8 +816,9 @@ const RegisterPage = ({ onSwitchToLogin, onApiSuccess, onApiError }) => {
       formData.append("license_expiry", licenseExpiry);
       formData.append("password", password);
       formData.append("address", address);
-      formData.append("latitude", currentLatitude.toFixed(6));
-      formData.append("longitude", currentLongitude.toFixed(6));
+      // FIX: Explicitly cast the latitude and longitude to strings when appending to FormData to resolve a type inference issue.
+      formData.append("latitude", String(currentLatitude));
+      formData.append("longitude", String(currentLongitude));
       if (businessImage) {
         formData.append("business_image", businessImage);
       }
@@ -687,15 +838,15 @@ const RegisterPage = ({ onSwitchToLogin, onApiSuccess, onApiError }) => {
       let errorMessage = "An unexpected error occurred during registration.";
       if (error instanceof GeolocationPositionError) {
         switch (error.code) {
-          case error.PERMISSION_DENIED:
+          case GeolocationPositionError.PERMISSION_DENIED:
             errorMessage =
               "Location permission denied. Please allow location access to register.";
             break;
-          case error.POSITION_UNAVAILABLE:
+          case GeolocationPositionError.POSITION_UNAVAILABLE:
             errorMessage =
               "Location information is unavailable. Please check your device settings.";
             break;
-          case error.TIMEOUT:
+          case GeolocationPositionError.TIMEOUT:
             errorMessage =
               "The request to get your location timed out. Please try again.";
             break;
@@ -775,6 +926,7 @@ const RegisterPage = ({ onSwitchToLogin, onApiSuccess, onApiError }) => {
             accept="image/*"
             onChange={handleImageChange}
             aria-label="Business Image"
+            required
           />
         </div>
         <div className="form-group">
@@ -839,7 +991,14 @@ const RegisterPage = ({ onSwitchToLogin, onApiSuccess, onApiError }) => {
   );
 };
 
-const UserMenu = ({ user, role, onLogout, onNavigate, onChangeCustomer }) => {
+const UserMenu = ({
+  user,
+  role,
+  onLogout,
+  onNavigate,
+  onChangeCustomer,
+  customerSelected,
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
 
@@ -889,14 +1048,26 @@ const UserMenu = ({ user, role, onLogout, onNavigate, onChangeCustomer }) => {
 
           {role === "sales" && onNavigate && (
             <>
-              <button
-                onClick={() => {
-                  onNavigate("salesman_orders");
-                  setIsOpen(false);
-                }}
-              >
-                My Orders
-              </button>
+              {customerSelected && (
+                <>
+                  <button
+                    onClick={() => {
+                      onNavigate("salesman_orders");
+                      setIsOpen(false);
+                    }}
+                  >
+                    My Orders
+                  </button>
+                  <button
+                    onClick={() => {
+                      onNavigate("payments");
+                      setIsOpen(false);
+                    }}
+                  >
+                    Payments
+                  </button>
+                </>
+              )}
               {onChangeCustomer && (
                 <button
                   onClick={() => {
@@ -917,11 +1088,15 @@ const UserMenu = ({ user, role, onLogout, onNavigate, onChangeCustomer }) => {
 };
 
 const ProductCard = ({ product, onAddToCart, onShowToast, role }) => {
-  const [quantity, setQuantity] = useState(1);
+  // FIX: Initialize quantity state with a string to prevent it from being undefined.
+  // This resolves multiple type errors related to using an uninitialized state variable
+  // for a controlled input component and its corresponding logic.
+  const [quantity, setQuantity] = useState("");
   const [bidPrice, setBidPrice] = useState(product.price.toFixed(2));
   const [bidError, setBidError] = useState("");
   const minBidPrice = product.price * 0.945;
   const bidPrice12=product.price+.12*product.price;
+  const imageUrl=API_BASE_URL+"/"+product.imageUrl;
   const handleBidChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newBid = e.target.value;
     setBidPrice(newBid);
@@ -963,9 +1138,12 @@ const ProductCard = ({ product, onAddToCart, onShowToast, role }) => {
       return;
     }
 
-    if (quantity > 0) {
-      onAddToCart(product, quantity, bid);
-      onShowToast(`${quantity} of ${product.name} added to cart!`, "success");
+    // FIX: Convert quantity from a string to a number for logical checks and for passing to the event handler.
+    // This resolves the type mismatch where a number was expected but a string was provided.
+    const numericQuantity = parseInt(quantity, 10);
+    if (numericQuantity > 0) {
+      onAddToCart(product, numericQuantity, bid);
+      onShowToast(`${numericQuantity} of ${product.name} added to cart!`, "success");
     } else {
       onShowToast("Please enter a valid quantity.", "error");
     }
@@ -973,11 +1151,11 @@ const ProductCard = ({ product, onAddToCart, onShowToast, role }) => {
 
   return (
     <div className="product-card">
-      {/* <img src={product.imageUrl} alt={product.name} /> */}
+     {product.imageUrl && <img src={imageUrl} alt={product.name} />}
       <div className="product-card-content">
         <h3>{product.name}</h3>
         <p className="product-price">
-          Standard Price: {bidPrice12.toFixed(2)} RS 
+          Standard Price: {bidPrice} RS 
         </p>
         <p>{product.description}</p>
         <div className="product-actions">
@@ -988,7 +1166,7 @@ const ProductCard = ({ product, onAddToCart, onShowToast, role }) => {
               type="number"
               className="form-input"
               value={quantity}
-              onChange={(e) => setQuantity(Math.max(1, Number(e.target.value)))}
+              onChange={(e) => setQuantity(e.target.value)}
               min="1"
               aria-label="Quantity"
             />
@@ -1000,7 +1178,7 @@ const ProductCard = ({ product, onAddToCart, onShowToast, role }) => {
               id={`bid-${product.id}`}
               type="number"
               className="form-input"
-              value={bidPrice12.toFixed(2)}
+              value={bidPrice}
               onChange={handleBidChange}
               min={role === "sales" ? minBidPrice.toFixed(2) : "0.01"}
               step="0.01"
@@ -1075,9 +1253,7 @@ const CatalogPage = ({
           description: `Packing: ${p.packing} | Barcode: ${p.barcode}`,
           price: parseFloat(p.tradePrice),
           imageUrl:
-            p.image_1 && !p.image_1.startsWith("http")
-              ? `${API_BASE_URL}${p.image_1}`
-              : p.image_1 || `https://picsum.photos/seed/${p.id}/400/300`, // Fallback image
+            p.image_1 
         }));
 
         setProducts((prev) =>
@@ -1202,6 +1378,7 @@ const CatalogPage = ({
                 onLogout={onLogout}
                 onNavigate={role === "customer" ? onNavigate : onNavigate}
                 onChangeCustomer={role === "sales" ? onChangeCustomer : null}
+                customerSelected={role === "sales" && !!selectedCustomer}
               />
             </div>
           </>
@@ -1256,10 +1433,10 @@ const CartPage = ({
 
   const handlePlaceOrder = (e: FormEvent) => {
     e.preventDefault();
-    if (!deliveryAddress.trim()) {
-      alert("Please enter a delivery address.");
-      return;
-    }
+    // if (!deliveryAddress.trim()) {
+    //   alert("Please enter a delivery address.");
+    //   return;
+    // }
     onPlaceOrder(deliveryAddress);
   };
 
@@ -1325,7 +1502,7 @@ const CartPage = ({
                 <span>{calculateTotal()} Rs</span>
               </div>
               <form className="checkout-form" onSubmit={handlePlaceOrder}>
-                <div className="form-group">
+                {/* <div className="form-group">
                   <label htmlFor="delivery-address">Delivery Address</label>
                   <input
                     id="delivery-address"
@@ -1336,7 +1513,7 @@ const CartPage = ({
                     placeholder="Enter your full delivery address"
                     required
                   />
-                </div>
+                </div> */}
                 <button type="submit" className="btn btn-primary">
                   Place Order
                 </button>
@@ -1755,9 +1932,9 @@ const OrdersPage = ({ onNavigateToCatalog, customerId }) => {
                 </div>
                 {expandedOrderId === order.id && (
                   <div className="order-details">
-                    <p>
+                    {/* <p>
                       <strong>Delivery Address:</strong> {order.address}
-                    </p>
+                    </p> */}
                     <h4>Items:</h4>
                     <div className="order-items-list">
                       {order.items.map((item) => (
@@ -1999,6 +2176,7 @@ const CustomerSearchPage = ({
           onLogout={onLogout}
           onNavigate={onNavigate}
           onChangeCustomer={null}
+          customerSelected={false}
         />
       </header>
       <main>
@@ -2089,14 +2267,16 @@ const SalesmanOrdersPage = ({
   });
   const [activeFilters, setActiveFilters] = useState(filters);
   const [expandedOrderId, setExpandedOrderId] = useState(null);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [selectedOrderForPayment, setSelectedOrderForPayment] = useState(null);
   const limit = 10;
   const employeeData = localStorage.getItem("employee");
   const employeeId = employeeData ? JSON.parse(employeeData).id : null;
 
   const fetchOrders = useCallback(
     async (isNewSearch = false) => {
-      if (!employeeId) {
-        setError("Sales representative ID not found.");
+      if (!employeeId || !selectedCustomer) {
+        setError("Sales representative or customer ID not found.");
         setIsLoading(false);
         return;
       }
@@ -2141,13 +2321,12 @@ const SalesmanOrdersPage = ({
         setIsFetchingMore(false);
       }
     },
-    [offset, activeFilters, employeeId]
+    [offset, activeFilters, employeeId, selectedCustomer]
   );
 
   useEffect(() => {
     fetchOrders(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeFilters]);
+  }, [fetchOrders]);
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
@@ -2161,7 +2340,7 @@ const SalesmanOrdersPage = ({
     setOffset(0);
   };
 
-  const handleStatusUpdate = async (orderId, newStatus) => {
+  const handleStatusUpdate = useCallback(async (orderId, newStatus) => {
     const token = localStorage.getItem("token");
     try {
       const response = await fetch(
@@ -2179,19 +2358,38 @@ const SalesmanOrdersPage = ({
         const errorData = await response.json();
         throw new Error(errorData.detail || "Failed to update status.");
       }
-      setOrders((prevOrders) =>
-        prevOrders.map((order) =>
-          order.id === orderId ? { ...order, status: newStatus } : order
-        )
-      );
       onApiSuccess("Order status updated successfully.");
+      // Refetch orders to ensure UI is in sync with backend
+      fetchOrders(true);
     } catch (err) {
       onApiError(err.message);
     }
+  }, [fetchOrders, onApiSuccess, onApiError]);
+
+  const handleOpenPaymentModal = (order, e) => {
+    e.stopPropagation();
+    setSelectedOrderForPayment(order);
+    setIsPaymentModalOpen(true);
   };
+
+  const handleClosePaymentModal = useCallback((paymentSubmitted) => {
+    setIsPaymentModalOpen(false);
+    setSelectedOrderForPayment(null);
+    if (paymentSubmitted) {
+      fetchOrders(true); // Refetch orders
+    }
+  }, [fetchOrders]);
 
   return (
     <div className="page-container">
+      {isPaymentModalOpen && (
+        <PaymentModal
+          order={selectedOrderForPayment}
+          onClose={handleClosePaymentModal}
+          onApiSuccess={onApiSuccess}
+          onApiError={onApiError}
+        />
+      )}
       <header className="catalog-header">
         <div className="header-title-group">
           <h1>My Orders</h1>
@@ -2210,6 +2408,7 @@ const SalesmanOrdersPage = ({
               onLogout={onLogout}
               onNavigate={onNavigate}
               onChangeCustomer={onChangeCustomer}
+              customerSelected={!!selectedCustomer}
             />
           )}
         </div>
@@ -2308,11 +2507,19 @@ const SalesmanOrdersPage = ({
                       className={`status-select status-${order.status?.toLowerCase()}`}
                     >
                       <option value="Pending">Pending</option>
-                      <option value="confirmed">Confirmed</option>
+                      <option value="Confirmed">Confirmed</option>
                       <option value="Completed">Completed</option>
                       <option value="Cancelled">Cancelled</option>
                     </select>
                   </div>
+                  {order.sale_invoice && (
+                    <button
+                      className="btn btn-primary pay-button"
+                      onClick={(e) => handleOpenPaymentModal(order, e)}
+                    >
+                      Pay
+                    </button>
+                  )}
                   <span
                     className={`order-toggle ${
                       expandedOrderId === order.id ? "expanded" : ""
@@ -2323,9 +2530,9 @@ const SalesmanOrdersPage = ({
                 </div>
                 {expandedOrderId === order.id && (
                   <div className="order-details">
-                    <p>
+                    {/* <p>
                       <strong>Delivery Address:</strong> {order.address}
-                    </p>
+                    </p> */}
                     <h4>Items:</h4>
                     <div className="order-items-list">
                       {order.items.map((item) => (
@@ -2368,6 +2575,117 @@ const SalesmanOrdersPage = ({
             </button>
           </div>
         )}
+      </main>
+    </div>
+  );
+};
+
+const PaymentsPage = ({
+  onNavigateToCatalog,
+  selectedCustomer,
+  onApiSuccess,
+  onApiError,
+}) => {
+  const [amount, setAmount] = useState("");
+  const [description, setDescription] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    const numericAmount = parseFloat(amount);
+
+    if (isNaN(numericAmount) || numericAmount <= 0) {
+      onApiError("Please enter a valid positive amount.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    const token = localStorage.getItem("token");
+    const payload = {
+      date: new Date().toISOString().split("T")[0],
+      customer: selectedCustomer.id,
+      warehouse: 1, // Default warehouse ID
+      amount: numericAmount,
+      description: description,
+    };
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/finance/receipts/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Token ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        const errorMessage =
+          Object.values(data).flat().join("\n") ||
+          "Failed to record payment.";
+        throw new Error(errorMessage);
+      }
+
+      onApiSuccess("Payment recorded successfully!");
+      // Reset form after successful submission
+      setAmount("");
+      setDescription("");
+    } catch (error) {
+      onApiError(error.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="page-container">
+      <header className="catalog-header">
+        <h1>Record Payment for {selectedCustomer.name}</h1>
+        <button onClick={onNavigateToCatalog} className="btn btn-secondary">
+          &larr; Back to Catalog
+        </button>
+      </header>
+      <main className="payment-page-main">
+        <form className="auth-form" onSubmit={handleSubmit}>
+          <p className="form-description">
+            Use this form to record old payments or advances received from the
+            customer that are not linked to a specific order.
+          </p>
+          <div className="form-group">
+            <label htmlFor="receipt-amount">Amount</label>
+            <input
+              id="receipt-amount"
+              type="number"
+              className="form-input"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              required
+              // FIX: The step and min props for an input element should be strings to ensure consistency and prevent potential type mismatches.
+              step="0.01"
+              min="0.01"
+              placeholder="Enter amount received"
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="receipt-description">Description</label>
+            <textarea
+              id="receipt-description"
+              className="form-input"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Optional: Add a note (e.g., old balance clearance)"
+              rows="4"
+            />
+          </div>
+          <button
+            type="submit"
+            className="btn btn-primary"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Submitting..." : "Record Payment"}
+          </button>
+        </form>
       </main>
     </div>
   );
@@ -2430,7 +2748,7 @@ const Footer = () => (
 // --- Main App Component ---
 
 function App() {
-  const [page, setPage] = useState("login"); // 'login', 'register', 'resetPassword', 'catalog', 'cart', 'profile', 'orders', 'customer_selection'
+  const [page, setPage] = useState("login"); // 'login', 'register', 'resetPassword', 'catalog', 'cart', 'profile', 'orders', 'customer_selection', 'payments'
   const [user, setUser] = useState(null);
   const [role, setRole] = useState(null); // 'customer' or 'sales'
   const [selectedCustomer, setSelectedCustomer] = useState(null);
@@ -2795,6 +3113,26 @@ function App() {
               onNavigate={setPage}
               onChangeCustomer={handleChangeCustomer}
               selectedCustomer={customerID}
+              onApiSuccess={(msg) => addToast(msg, "success")}
+              onApiError={(msg) => addToast(msg, "error")}
+            />
+          </>
+        );
+      case "payments":
+        return (
+          <>
+            <div className="toast-container">
+              {toasts.map((toast) => (
+                <Toast
+                  key={toast.id}
+                  {...toast}
+                  onClose={() => removeToast(toast.id)}
+                />
+              ))}
+            </div>
+            <PaymentsPage
+              onNavigateToCatalog={() => setPage("catalog")}
+              selectedCustomer={selectedCustomer}
               onApiSuccess={(msg) => addToast(msg, "success")}
               onApiError={(msg) => addToast(msg, "error")}
             />

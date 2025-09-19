@@ -526,6 +526,18 @@ body {
     margin-top: 1rem;
 }
 
+/* --- Payments Page --- */
+.payment-page-main {
+    max-width: 600px;
+    margin: 2rem auto 0;
+}
+
+.payment-page-main .form-description {
+    margin-bottom: 1.5rem;
+    text-align: center;
+    color: var(--text-light-color);
+}
+
 /* --- Orders Page --- */
 .orders-list {
     display: flex;
@@ -1196,4 +1208,57 @@ body {
     font-size: 0.8rem;
     margin: 0.25rem 0 0;
     font-weight: 500;
+}
+
+/* --- Payment Modal --- */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1100;
+  padding: 1rem;
+}
+
+.modal-content {
+  background: var(--background-color);
+  padding: 2rem;
+  border-radius: var(--border-radius);
+  box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+  width: 100%;
+  max-width: 500px;
+  animation: modal-fade-in 0.3s ease-out;
+}
+
+.modal-content h2 {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+@keyframes modal-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.pay-button {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
 }
