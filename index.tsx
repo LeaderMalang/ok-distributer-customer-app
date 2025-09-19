@@ -5,7 +5,7 @@
 import { useState, useEffect, FormEvent, useRef, FC, useCallback } from "react";
 import ReactDOM from "react-dom/client";
 import { createPortal } from "react-dom";
-const API_BASE_URL = "http://127.0.0.1:8000";
+const API_BASE_URL = "https://erp.okdtts.com";
 
 // --- Toast Notification Component ---
 interface ToastProps {
@@ -470,7 +470,7 @@ const LoginPage = ({
         body: JSON.stringify({ username: email, password }),
       });
       const data = await response.json();
-      console.log(data);
+      //console.log(data);
       if (response.ok) {
         localStorage.setItem("token", data.token);
         if (data.employee && (data.role === "SALES" || isSalesLogin)) {
@@ -631,7 +631,7 @@ const ResetPasswordPage = ({ onSwitchToLogin, onApiSuccess, onApiError }) => {
           }),
         }
       );
-      console.log(response);
+      //console.log(response);
       if (response.status === 204) {
         onApiSuccess(
           "Password has been reset successfully. Please log in with your new password."
@@ -817,8 +817,8 @@ const RegisterPage = ({ onSwitchToLogin, onApiSuccess, onApiError }) => {
       formData.append("password", password);
       formData.append("address", address);
       // FIX: Explicitly cast the latitude and longitude to strings when appending to FormData to resolve a type inference issue.
-      formData.append("latitude", String(currentLatitude));
-      formData.append("longitude", String(currentLongitude));
+      formData.append("latitude", currentLatitude.toString());
+      formData.append("longitude", currentLongitude.toString());
       if (businessImage) {
         formData.append("business_image", businessImage);
       }
@@ -1554,7 +1554,7 @@ const ProfilePage = ({
         });
 
         const data = await response.json();
-        console.log(data);
+        //console.log(data);
         if (!response.ok) {
           throw new Error("Failed to fetch profile data.");
         }
@@ -2661,9 +2661,9 @@ const PaymentsPage = ({
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               required
-              // FIX: The step and min props for an input element should be strings to ensure consistency and prevent potential type mismatches.
-              step="0.01"
-              min="0.01"
+              // FIX: The step and min props for an input element should be numbers to ensure consistency and prevent potential type mismatches.
+              step={0.01}
+              min={0.01}
               placeholder="Enter amount received"
             />
           </div>
@@ -2775,8 +2775,8 @@ function App() {
   useEffect(() => {
     const handleBeforeInstallPrompt = (e) => {
       e.preventDefault();
-      const dismissed = localStorage.getItem("installPromptDismissed");
-      if (!dismissed) {
+      const dismissedInSession = sessionStorage.getItem("installPromptDismissed");
+      if (!dismissedInSession) {
         setInstallPromptEvent(e);
         setIsInstallPromptVisible(true);
       }
@@ -2794,15 +2794,14 @@ function App() {
     if (!installPromptEvent) return;
     installPromptEvent.prompt();
     const { outcome } = await installPromptEvent.userChoice;
-    console.log(`User response to the install prompt: ${outcome}`);
+    //console.log(`User response to the install prompt: ${outcome}`);
     setIsInstallPromptVisible(false);
     setInstallPromptEvent(null);
-    localStorage.setItem("installPromptDismissed", "true");
   };
 
   const handleDismissInstall = () => {
     setIsInstallPromptVisible(false);
-    localStorage.setItem("installPromptDismissed", "true");
+    sessionStorage.setItem("installPromptDismissed", "true");
   };
 
   const addToast = (message, type) => {
@@ -2949,7 +2948,7 @@ function App() {
       });
       const data = await response.json();
 
-      console.log("Order response:", data);
+      //console.log("Order response:", data);
       if (!response.ok) {
         const errorMessage = Object.values(data).flat().join("\n");
         throw new Error(errorMessage || "Failed to place order.");
@@ -3094,7 +3093,8 @@ function App() {
           </>
         );
       case "salesman_orders":
-        const customerID = selectedCustomer.id;
+        // FIX: Ensure customer ID is a number to prevent type errors.
+        const customerID = Number(selectedCustomer.id);
         return (
           <>
             <div className="toast-container">
